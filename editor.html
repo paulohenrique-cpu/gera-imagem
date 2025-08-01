@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Editor Estilo Canva/Photoshop</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #1e1e1e;
+      color: white;
+    }
+    header {
+      background: #121212;
+      padding: 10px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    header h1 {
+      font-size: 20px;
+      color: #00e0ff;
+    }
+    .tools {
+      background: #222;
+      padding: 10px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+    }
+    .tools input, .tools button, .tools select {
+      padding: 8px;
+      font-size: 14px;
+      border-radius: 4px;
+      border: none;
+    }
+    .tools button {
+      background: #00c851;
+      color: white;
+      cursor: pointer;
+    }
+    .tools button:hover {
+      background: #007e33;
+    }
+    canvas {
+      background: #ffffff;
+      display: block;
+      margin: 20px auto;
+      border: 2px solid #444;
+      border-radius: 8px;
+      cursor: move;
+    }
+    .formatos {
+      margin: 20px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .formatos h3 {
+      width: 100%;
+      margin: 0 0 5px;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Editor Avançado - Estilo Canva/Photoshop</h1>
+    <button onclick="voltar()">Voltar para Página Principal</button>
+  </header>
+
+  <div class="tools">
+    <input type="file" id="bgUpload" accept="image/*">
+    <input type="file" id="imgUpload" accept="image/*">
+    <input type="text" id="textInput" placeholder="Digite um texto...">
+    <button onclick="addText()">Adicionar Texto</button>
+    <button onclick="removeSelected()">Remover Selecionado</button>
+    <button onclick="toggleShadow()">Sombra</button>
+    <label>Rotação:</label>
+    <input type="range" id="rotateSlider" min="0" max="360" value="0" onchange="rotateSelected(this.value)">
+    <select id="saveFormat">
+      <option value="jpeg">Salvar como JPG</option>
+      <option value="png">Salvar como PNG</option>
+    </select>
+    <input type="number" id="customW" placeholder="Largura px" style="width:100px">
+    <input type="number" id="customH" placeholder="Altura px" style="width:100px">
+    <button onclick="salvarImagem()">Salvar Imagem</button>
+  </div>
+
+  <div class="formatos">
+    <h3>Fundos prontos com tamanho:</h3>
+    <button onclick="setFormato(1580,700,'https://ik.imagekit.io/ys8l6suo53/black%20site%20bane%20pc.jpg')">Banner PC</button>
+    <button onclick="setFormato(820,1000,'https://ik.imagekit.io/ys8l6suo53/natal%20computador.jpg')">Banner Celular</button>
+    <button onclick="setFormato(980,465,'https://ik.imagekit.io/ys8l6suo53/natal%20promo%C3%A7ao.jpg')">Promoção</button>
+    <button onclick="setFormato(1080,1080,'https://ik.imagekit.io/ys8l6suo53/sorteio.jpg')">Instagram Sorteio</button>
+    <button onclick="setFormato(1080,1080,'https://ik.imagekit.io/ys8l6suo53/mes%20da%20mes.jpg')">Instagram Mês</button>
+    <button onclick="setFormato(1080,1080,'https://ik.imagekit.io/ys8l6suo53/intagram.jpg')">Instagram Geral</button>
+    <button onclick="setFormato(1080,1080,'https://ik.imagekit.io/ys8l6suo53/festa%20junina.jpg')">Festa Junina</button>
+
+    <h3>Inserir Logo:</h3>
+    <button onclick="inserirLogo('https://ik.imagekit.io/ys8l6suo53/logo.png')">Logo Principal</button>
+    <button onclick="inserirLogo('https://ik.imagekit.io/ys8l6suo53/lojo%201.png')">Logo 2</button>
+    <button onclick="inserirLogo('https://ik.imagekit.io/ys8l6suo53/Capturar-removebg-preview.png')">Logo Capturar</button>
+  </div>
+
+  <canvas id="canvas" width="1000" height="1000"></canvas>
+
+  <script>
+    const canvas = document.getElementById("canvas");
+    const ctx = canvas.getContext("2d");
+    const elements = [];
+    let selected = null;
+    let isDragging = false;
+    let offsetX = 0, offsetY = 0;
+
+    document.getElementById("bgUpload").addEventListener("change", e => {
+      const file = e.target.files[0];
+      const reader = new FileReader();
+      reader.onload = evt => {
+        const img = new Image();
+        img.onload = () => {
+          const el = { type: "bg", img, x: 0, y: 0, w: canvas.width, h: canvas.height, angle: 0, shadow: false };
+          elements.unshift(el);
+          selected = el;
+          draw();
+        };
+        img.src = evt.target.result;
+      };
+      reader.readAsDataURL(file);
+    });
+
+    document.getElementById("imgUpload").addEventListener("change", e => {
+      const file = e.target.files[0];
+      const reader = new FileReader();
+      reader.onload = evt => {
+        const img = new Image();
+        img.onload = () => {
+          const el = { type: "img", img, x: 200, y: 200, w: 300, h: 300, angle: 0, shadow: false, file };
+          elements.push(el);
+          selected = el;
+          draw();
+        };
+        img.src = evt.target.result;
+      };
+      reader.readAsDataURL(file);
+    });
+
+    function addText() {
+      const txt = document.getElementById("textInput").value;
+      if (txt.trim() !== "") {
+        const el = { type: "text", text: txt, x: 300, y: 300, fontSize: 32, angle: 0, shadow: false };
+        elements.push(el);
+        selected = el;
+        draw();
+      }
+    }
+
+    function removeSelected() {
+      if (selected) {
+        const index = elements.indexOf(selected);
+        if (index > -1) elements.splice(index, 1);
+        selected = null;
+        draw();
+      }
+    }
+
+    function toggleShadow() {
+      if (selected) {
+        selected.shadow = !selected.shadow;
+        draw();
+      }
+    }
+
+    function rotateSelected(value) {
+      if (selected) {
+        selected.angle = parseFloat(value);
+        draw();
+      }
+    }
+
+    function removerFundo() {
+      if (!selected || selected.type !== "img" || !selected.file) {
+        alert("Selecione uma imagem válida para remover o fundo.");
+        return;
+      }
+
+      const form = new FormData();
+      form.append("image", selected.file);
+
+      fetch("https://api.pixian.ai/api/v2/remove-background", {
+        method: "POST",
+        headers: {
+          "Authorization": "Basic " + btoa("pxzqepjti6sh88j:8m6a8esbq8vok6rhrrf30ou2sijigjq0thlop25fpn70rrg8k69s")
+        },
+        body: form
+      })
+        .then(res => res.blob())
+        .then(blob => {
+          const url = URL.createObjectURL(blob);
+          const img = new Image();
+          img.onload = () => {
+            selected.img = img;
+            draw();
+          };
+          img.src = url;
+        })
+        .catch(err => {
+          console.error("Erro:", err);
+          alert("Erro ao remover fundo.");
+        });
+    }
+
+    function salvarImagem() {
+      const format = document.getElementById("saveFormat").value;
+      const mimeType = format === "jpeg" ? "image/jpeg" : "image/png";
+      const customW = parseInt(document.getElementById("customW").value) || canvas.width;
+      const customH = parseInt(document.getElementById("customH").value) || canvas.height;
+
+      const tempCanvas = document.createElement("canvas");
+      const tempCtx = tempCanvas.getContext("2d");
+      tempCanvas.width = customW;
+      tempCanvas.height = customH;
+
+      tempCtx.fillStyle = "#ffffff";
+      tempCtx.fillRect(0, 0, customW, customH);
+      tempCtx.drawImage(canvas, 0, 0, customW, customH);
+
+      const link = document.createElement("a");
+      link.download = `imagem_editada.${format}`;
+      link.href = tempCanvas.toDataURL(mimeType, 1.0);
+      link.click();
+    }
+
+    function voltar() {
+      window.location.href = "index.html";
+    }
+
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      for (const el of elements) {
+        ctx.save();
+        ctx.translate(el.x + (el.w || 0) / 2, el.y + (el.h || 0) / 2);
+        ctx.rotate((el.angle || 0) * Math.PI / 180);
+        if (el.shadow) {
+          ctx.shadowColor = "rgba(0,0,0,0.5)";
+          ctx.shadowBlur = 10;
+          ctx.shadowOffsetX = 5;
+          ctx.shadowOffsetY = 5;
+        }
+        if (el.type === "img" || el.type === "bg") {
+          ctx.drawImage(el.img, -(el.w / 2), -(el.h / 2), el.w, el.h);
+        } else if (el.type === "text") {
+          ctx.font = `bold ${el.fontSize}px Arial`;
+          ctx.fillStyle = "#ffffff";
+          ctx.fillText(el.text, -ctx.measureText(el.text).width / 2, el.fontSize / 2);
+        }
+        ctx.restore();
+      }
+    }
+
+    function setFormato(w, h, bgUrl) {
+      canvas.width = w;
+      canvas.height = h;
+      const bg = new Image();
+      bg.crossOrigin = "anonymous";
+      bg.onload = () => {
+        const el = { type: "bg", img: bg, x: 0, y: 0, w, h, angle: 0, shadow: false };
+        elements.unshift(el);
+        selected = el;
+        draw();
+      };
+      bg.src = bgUrl;
+    }
+
+    function inserirLogo(url) {
+      const logo = new Image();
+      logo.crossOrigin = "anonymous";
+      logo.onload = () => {
+        const el = { type: "img", img: logo, x: 20, y: 20, w: 150, h: 150, angle: 0, shadow: false };
+        elements.push(el);
+        selected = el;
+        draw();
+      };
+      logo.src = url;
+    }
+
+    canvas.addEventListener("mousedown", e => {
+      const rect = canvas.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      for (let i = elements.length - 1; i >= 0; i--) {
+        const el = elements[i];
+        if ((el.type === "img" || el.type === "bg") && x > el.x && x < el.x + el.w && y > el.y && y < el.y + el.h) {
+          selected = el;
+          offsetX = x - el.x;
+          offsetY = y - el.y;
+          isDragging = true;
+          return;
+        }
+        if (el.type === "text" && x > el.x && x < el.x + 200 && y > el.y - el.fontSize && y < el.y + 10) {
+          selected = el;
+          offsetX = x - el.x;
+          offsetY = y - el.y;
+          isDragging = true;
+          return;
+        }
+      }
+    });
+
+    canvas.addEventListener("mousemove", e => {
+      if (!isDragging || !selected) return;
+      const rect = canvas.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      selected.x = x - offsetX;
+      selected.y = y - offsetY;
+      draw();
+    });
+
+    canvas.addEventListener("mouseup", () => isDragging = false);
+    canvas.addEventListener("wheel", e => {
+      if (!selected || (selected.type !== "img" && selected.type !== "bg")) return;
+      e.preventDefault();
+      const scale = e.deltaY < 0 ? 1.05 : 0.95;
+      selected.w *= scale;
+      selected.h *= scale;
+      draw();
+    });
+  </script>
+</body>
+</html>

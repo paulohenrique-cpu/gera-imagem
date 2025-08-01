@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Gerador de Imagem</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <h1>Gerador de Imagem</h1>
+
+  <div class="form-container">
+    <label>Escolha o Fundo:</label>
+    <select id="bgSelect" onchange="selecionarFundo(this.value)">
+      <option value="upload">Enviar do computador</option>
+      <option value="https://ik.imagekit.io/ys8l6suo53/123.png?updatedAt=1753984769664">Usar fundo 1</option>
+      <option value="https://ik.imagekit.io/ys8l6suo53/1234.png?updatedAt=1753984786230">Usar fundo 2</option>
+      <option value="https://ik.imagekit.io/ys8l6suo53/sorteio.jpg?updatedAt=1754012783037">Sorteio</option>
+      <option value="https://ik.imagekit.io/ys8l6suo53/mes%20da%20mes.jpg?updatedAt=1754012759759">Mês da Mês</option>
+      <option value="https://ik.imagekit.io/ys8l6suo53/intagram.jpg?updatedAt=1754012196565">Instagram Geral</option>
+      <option value="https://ik.imagekit.io/ys8l6suo53/festa%20junina.jpg?updatedAt=1754012232201">Festa Junina</option>
+      <option value="https://ik.imagekit.io/ys8l6suo53/black.jpg?updatedAt=1754012259490">Black Oferta</option>
+    </select><br />
+    <input type="file" id="bgImage" accept="image/*" /><br />
+
+    <label>Foto do Produto:</label>
+    <input type="file" id="productImage" accept="image/*" /><br />
+
+    <label>Título do Produto:</label>
+    <input type="text" id="productTitle" placeholder="Ex: Cartucho HP 664" /><br />
+
+    <label>Preço:</label>
+    <input type="text" id="productPrice" placeholder="Ex: R$ 79,90" /><br />
+
+    <label>Texto adicional:</label>
+    <input type="text" id="extraText" placeholder="Ex: Promoção válida até..." /><br />
+
+    <button onclick="gerarImagem()">Gerar Imagem</button>
+    <a id="downloadBtn" style="display:none;" download="anuncio.png">Baixar Imagem</a>
+    <br /><br />
+    <button onclick="location.href='editor.html'">Edição Avançada</button>
+    <button onclick="document.getElementById('productImage').click()">Adicionar mais fotos</button>
+    <button onclick="removerFundoProduto()">Remover Fundo do Produto</button>
+
+    <br><br>
+    <button onclick="abrirEditorPersonalizado()">Editor com Tamanhos Prontos</button>
+  </div>
+
+  <div class="preview">
+    <canvas id="canvas" width="768" height="768"></canvas>
+  </div>
+
+  <script src="script.js"></script>
+  <script>
+  function removerFundoProduto() {
+    const productFileInput = document.getElementById("productImage");
+    const file = productFileInput.files[0];
+
+    if (!file) {
+      alert("Envie a imagem do produto primeiro.");
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = function (event) {
+      const base64Image = event.target.result.split(',')[1];
+
+      fetch("https://api.developer.pixelcut.ai/v1/remove-background", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json",
+          "X-API-KEY": "sk_1ae33a0a51f44f02a6052c050c1fd362"
+        },
+        body: JSON.stringify({
+          image_data: base64Image,
+          format: "png"
+        })
+      })
+        .then(res => res.json())
+        .then(data => {
+          if (!data?.url) {
+            alert("Erro ao remover fundo.");
+            return;
+          }
+
+          const img = new Image();
+          img.crossOrigin = "anonymous";
+          img.onload = function () {
+            productImg = img;
+            drawCanvas();
+          };
+          img.src = data.url;
+        })
+        .catch(error => {
+          console.error("Erro ao remover fundo:", error);
+          alert("Erro ao remover fundo.");
+        });
+    };
+
+    reader.readAsDataURL(file);
+  }
+</script>
+
+  <script>
+    function abrirEditorPersonalizado() {
+      window.location.href = 'editor.html';
+    }
+  </script>
+</body>
+</html>
