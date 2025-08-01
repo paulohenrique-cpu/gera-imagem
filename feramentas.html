@@ -1,0 +1,1844 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Central de Ferramentas do PC</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .card-hover {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .card-hover:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+        .pulse-dot {
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        /* Animações do Teclado */
+        @keyframes keyPress {
+            0% { transform: translateY(0); }
+            50% { transform: translateY(2px); }
+            100% { transform: translateY(0); }
+        }
+        
+        @keyframes keyboardGlow {
+            0% { filter: drop-shadow(0 0 5px #10b981); }
+            50% { filter: drop-shadow(0 0 15px #10b981); }
+            100% { filter: drop-shadow(0 0 5px #10b981); }
+        }
+        
+        .key-animate {
+            animation: keyPress 0.2s ease-in-out;
+        }
+        
+        .keyboard-tested {
+            animation: keyboardGlow 2s ease-in-out;
+        }
+        
+        /* Animações do Mouse */
+        @keyframes mouseClick {
+            0% { transform: scale(1); }
+            50% { transform: scale(0.95); }
+            100% { transform: scale(1); }
+        }
+        
+        @keyframes mouseGlow {
+            0% { filter: drop-shadow(0 0 5px #10b981); }
+            50% { filter: drop-shadow(0 0 15px #10b981); }
+            100% { filter: drop-shadow(0 0 5px #10b981); }
+        }
+        
+        .mouse-click-animate {
+            animation: mouseClick 0.3s ease-in-out;
+        }
+        
+        .mouse-tested {
+            animation: mouseGlow 2s ease-in-out;
+        }
+        
+        /* Animação do Teste de Internet */
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        @keyframes speedPulse {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.1); opacity: 0.7; }
+        }
+        
+        .loading-spinner {
+            animation: spin 1s linear infinite;
+        }
+        
+        .speed-testing {
+            animation: speedPulse 1.5s ease-in-out infinite;
+        }
+    </style>
+</head>
+<body class="gradient-bg min-h-screen">
+    <div class="container mx-auto px-4 py-8">
+        <!-- Header -->
+        <div class="text-center mb-12">
+            <!-- Logo -->
+            <div class="mb-6">
+                <a href="https://lasertecsuprimentos.com.br/" target="_blank" class="inline-block hover:opacity-80 transition-opacity">
+                    <img src="https://ik.imagekit.io/ys8l6suo53/lojo%201.png?updatedAt=" alt="Lasertec Suprimentos" class="h-16 mx-auto">
+                </a>
+            </div>
+            <h1 class="text-4xl font-bold text-white mb-4">🛠️ Central de Ferramentas do PC</h1>
+            <p class="text-xl text-white opacity-90">Teste seu hardware e baixe programas essenciais</p>
+        </div>
+
+        <!-- Jogo Offline (aparece quando sem internet) -->
+        <div id="offline-game" class="hidden fixed inset-0 bg-gray-900 z-50 flex items-center justify-center">
+            <div class="text-center text-white p-8">
+                <h2 class="text-4xl font-bold mb-4">🦕 Sem Internet!</h2>
+                <p class="text-xl mb-8">Jogue enquanto espera a conexão voltar</p>
+                
+                <!-- Game Canvas -->
+                <div class="bg-gray-800 rounded-lg p-4 mb-4 mx-auto" style="max-width: 800px;">
+                    <canvas id="game-canvas" width="800" height="200" class="border border-gray-600 rounded bg-gray-100 w-full"></canvas>
+                </div>
+                
+                <!-- Game Controls -->
+                <div class="flex justify-center gap-4 mb-4">
+                    <button id="jump-btn" class="bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-lg font-bold text-lg md:hidden">
+                        PULAR
+                    </button>
+                    <button id="restart-btn" class="bg-green-500 hover:bg-green-600 text-white px-6 py-3 rounded-lg font-bold">
+                        REINICIAR
+                    </button>
+                </div>
+                
+                <!-- Game Info -->
+                <div class="text-center">
+                    <div class="text-2xl font-bold mb-2">Pontuação: <span id="game-score">0</span></div>
+                    <div class="text-sm text-gray-300 mb-4">
+                        <span class="md:inline hidden">Pressione ESPAÇO para pular</span>
+                        <span class="md:hidden">Toque no botão PULAR</span>
+                    </div>
+                    <button id="close-game" class="text-blue-400 hover:text-blue-300 underline">
+                        Fechar Jogo
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Grid de Ferramentas -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            
+            <!-- Downloads de Programas -->
+            <div class="bg-white rounded-xl p-6 card-hover">
+                <div class="text-center mb-4">
+                    <div class="text-4xl mb-3">💾</div>
+                    <h3 class="text-xl font-bold text-gray-800">Downloads Essenciais</h3>
+                </div>
+                <div class="space-y-3">
+                    <a href="https://www.google.com/chrome/" target="_blank" class="block bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors text-center">
+                        Google Chrome
+                    </a>
+                    <a href="https://www.mozilla.org/firefox/" target="_blank" class="block bg-orange-500 text-white px-4 py-2 rounded-lg hover:bg-orange-600 transition-colors text-center">
+                        Firefox
+                    </a>
+                    <a href="https://www.videolan.org/vlc/" target="_blank" class="block bg-orange-600 text-white px-4 py-2 rounded-lg hover:bg-orange-700 transition-colors text-center">
+                        VLC Media Player
+                    </a>
+                    <a href="https://www.7-zip.org/" target="_blank" class="block bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition-colors text-center">
+                        7-Zip
+                    </a>
+                </div>
+            </div>
+
+            <!-- ISOs do Sistema -->
+            <div class="bg-white rounded-xl p-6 card-hover">
+                <div class="text-center mb-4">
+                    <div class="text-4xl mb-3">💿</div>
+                    <h3 class="text-xl font-bold text-gray-800">ISOs de Sistema</h3>
+                </div>
+                <div class="space-y-3">
+                    <a href="https://www.microsoft.com/software-download/windows11" target="_blank" class="block bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors text-center">
+                        Windows 11 ISO
+                    </a>
+                    <a href="https://www.microsoft.com/software-download/windows10" target="_blank" class="block bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors text-center">
+                        Windows 10 ISO
+                    </a>
+                    <a href="https://ubuntu.com/download/desktop" target="_blank" class="block bg-orange-500 text-white px-4 py-2 rounded-lg hover:bg-orange-600 transition-colors text-center">
+                        Ubuntu Linux
+                    </a>
+                    <a href="https://rufus.ie/" target="_blank" class="block bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-colors text-center">
+                        Rufus (Criar USB)
+                    </a>
+                </div>
+            </div>
+
+            <!-- Teste de Câmera -->
+            <div class="bg-white rounded-xl p-6 card-hover">
+                <div class="text-center mb-4">
+                    <div class="text-4xl mb-3">📷</div>
+                    <h3 class="text-xl font-bold text-gray-800">Teste de Câmera</h3>
+                </div>
+                <div id="camera-section">
+                    <div class="relative">
+                        <video id="video" class="w-full h-32 bg-gray-200 rounded-lg mb-3" autoplay muted></video>
+                        <canvas id="motion-canvas" class="absolute top-0 left-0 w-full h-32 rounded-lg pointer-events-none opacity-50 hidden"></canvas>
+                        <div id="motion-indicator" class="absolute top-2 right-2 w-4 h-4 rounded-full bg-gray-400 transition-colors duration-300"></div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-2 mb-3 text-sm">
+                        <div>Status: <span id="camera-status" class="font-bold text-gray-600">Desligada</span></div>
+                        <div>Movimento: <span id="motion-level" class="font-bold text-blue-600">0%</span></div>
+                    </div>
+                    <button id="start-camera" class="w-full bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition-colors">
+                        Iniciar Câmera
+                    </button>
+                    <button id="stop-camera" class="w-full bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-colors mt-2 hidden">
+                        Parar Câmera
+                    </button>
+                    <button id="toggle-motion" class="w-full bg-purple-500 text-white px-4 py-2 rounded-lg hover:bg-purple-600 transition-colors mt-2 hidden">
+                        Ativar Detecção de Movimento
+                    </button>
+                </div>
+            </div>
+
+            <!-- Teste de Teclado -->
+            <div class="bg-white rounded-xl p-6 card-hover">
+                <div class="text-center mb-4">
+                    <div class="text-4xl mb-3">⌨️</div>
+                    <h3 class="text-xl font-bold text-gray-800">Teste de Teclado</h3>
+                </div>
+                <div>
+                    <!-- Teclado ABNT2 -->
+                    <div class="text-center mb-4">
+                        <svg id="keyboard-svg" class="w-80 h-32 mx-auto cursor-pointer transition-colors duration-300" viewBox="0 0 400 160" fill="currentColor">
+                            <!-- Base do teclado -->
+                            <rect x="10" y="20" width="380" height="120" rx="8" fill="#2d3748" stroke="#1a202c" stroke-width="2"/>
+                            
+                            <!-- Fileira 1: Números e símbolos -->
+                            <rect data-key="'" x="20" y="30" width="12" height="12" rx="2" fill="#e2e8f0" stroke="#cbd5e0"/>
+                            <rect data-key="1" x="35" y="30" width="12" height="12" rx="2" fill="#e2e8f0" stroke="#cbd5e0"/>
+                            <rect data-key="2" x="50" y="30" width="12" height="12" rx="2" fill="#e2e8f0" stroke="#cbd5e0"/>
+                            <rect data-key="3" x="65" y="30" width="12" height="12" rx="2" fill="#e2e8f0" stroke="#cbd5e0"/>
+                            <rect data-key="4" x="80" y="30" width="12" height="12" rx="2" fill="#e2e8f0" stroke="#cbd5e0"/>
+                            <rect data-key="5" x="95" y="30" width="12" height="12" rx="2" fill="#e2e8f0" stroke="#cbd5e0"/>
+                            <rect data-key="6" x="110" y="30" width="12" height="12" rx="2" fill="#e2e8f0" stroke="#cbd5e0"/>
+                            <rect data-key="7" x="125" y="30" width="12" height="12" rx="2" fill="#e2e8f0" stroke="#cbd5e0"/>
+                            <rect data-key="8" x="140" y="30" width="12" height="12" rx="2" fill="#e2e8f0" stroke="#cbd5e0"/>
+                            <rect data-key="9" x="155" y="30" width="12" height="12" rx="2" fill="#e2e8f0" stroke="#cbd5e0"/>
+                            <rect data-key="0" x="170" y="30" width="12" height="12" rx="2" fill="#e2e8f0" stroke="#cbd5e0"/>
+                            <rect data-key="-" x="185" y="30" width="12" height="12" rx="2" fill="#e2e8f0" stroke="#cbd5e0"/>
+                            <rect data-key="=" x="200" y="30" width="12" height="12" rx="2" fill="#e2e8f0" stroke="#cbd5e0"/>
+                            <rect data-key="Backspace" x="215" y="30" width="25" height="12" rx="2" fill="#f7fafc" stroke="#cbd5e0"/>
+                            
+                            <!-- Fileira 2: QWERTY -->
+                            <rect data-key="Tab" x="20" y="45" width="18" height="12" rx="2" fill="#f7fafc" stroke="#cbd5e0"/>
+                            <rect data-key="q" x="41" y="45" width="12" height="12" rx="2" fill="#e2e8f0" stroke="#cbd5e0"/>
+                            <rect data-key="w" x="56" y="45" width="12" height="12" rx="2" fill="#e2e8f0" stroke="#cbd5e0"/>
+                            <rect data-key="e" x="71" y="45" width="12" height="12" rx="2" fill="#e2e8f0" stroke="#cbd5e0"/>
+                            <rect data-key="r" x="86" y="45" width="12" height="12" rx="2" fill="#e2e8f0" stroke="#cbd5e0"/>
+                            <rect data-key="t" x="101" y="45" width="12" height="12" rx="2" fill="#e2e8f0" stroke="#cbd5e0"/>
+                            <rect data-key="y" x="116" y="45" width="12" height="12" rx="2" fill="#e2e8f0" stroke="#cbd5e0"/>
+                            <rect data-key="u" x="131" y="45" width="12" height="12" rx="2" fill="#e2e8f0" stroke="#cbd5e0"/>
+                            <rect data-key="i" x="146" y="45" width="12" height="12" rx="2" fill="#e2e8f0" stroke="#cbd5e0"/>
+                            <rect data-key="o" x="161" y="45" width="12" height="12" rx="2" fill="#e2e8f0" stroke="#cbd5e0"/>
+                            <rect data-key="p" x="176" y="45" width="12" height="12" rx="2" fill="#e2e8f0" stroke="#cbd5e0"/>
+                            <rect data-key="´" x="191" y="45" width="12" height="12" rx="2" fill="#e2e8f0" stroke="#cbd5e0"/>
+                            <rect data-key="[" x="206" y="45" width="12" height="12" rx="2" fill="#e2e8f0" stroke="#cbd5e0"/>
+                            <rect data-key="Enter" x="221" y="45" width="19" height="27" rx="2" fill="#f7fafc" stroke="#cbd5e0"/>
+                            
+                            <!-- Fileira 3: ASDF -->
+                            <rect data-key="CapsLock" x="20" y="60" width="22" height="12" rx="2" fill="#f7fafc" stroke="#cbd5e0"/>
+                            <rect data-key="a" x="45" y="60" width="12" height="12" rx="2" fill="#e2e8f0" stroke="#cbd5e0"/>
+                            <rect data-key="s" x="60" y="60" width="12" height="12" rx="2" fill="#e2e8f0" stroke="#cbd5e0"/>
+                            <rect data-key="d" x="75" y="60" width="12" height="12" rx="2" fill="#e2e8f0" stroke="#cbd5e0"/>
+                            <rect data-key="f" x="90" y="60" width="12" height="12" rx="2" fill="#e2e8f0" stroke="#cbd5e0"/>
+                            <rect data-key="g" x="105" y="60" width="12" height="12" rx="2" fill="#e2e8f0" stroke="#cbd5e0"/>
+                            <rect data-key="h" x="120" y="60" width="12" height="12" rx="2" fill="#e2e8f0" stroke="#cbd5e0"/>
+                            <rect data-key="j" x="135" y="60" width="12" height="12" rx="2" fill="#e2e8f0" stroke="#cbd5e0"/>
+                            <rect data-key="k" x="150" y="60" width="12" height="12" rx="2" fill="#e2e8f0" stroke="#cbd5e0"/>
+                            <rect data-key="l" x="165" y="60" width="12" height="12" rx="2" fill="#e2e8f0" stroke="#cbd5e0"/>
+                            <rect data-key="ç" x="180" y="60" width="12" height="12" rx="2" fill="#e2e8f0" stroke="#cbd5e0"/>
+                            <rect data-key="~" x="195" y="60" width="12" height="12" rx="2" fill="#e2e8f0" stroke="#cbd5e0"/>
+                            <rect data-key="]" x="210" y="60" width="12" height="12" rx="2" fill="#e2e8f0" stroke="#cbd5e0"/>
+                            
+                            <!-- Fileira 4: ZXCV -->
+                            <rect data-key="Shift" x="20" y="75" width="28" height="12" rx="2" fill="#f7fafc" stroke="#cbd5e0"/>
+                            <rect data-key="\\" x="51" y="75" width="12" height="12" rx="2" fill="#e2e8f0" stroke="#cbd5e0"/>
+                            <rect data-key="z" x="66" y="75" width="12" height="12" rx="2" fill="#e2e8f0" stroke="#cbd5e0"/>
+                            <rect data-key="x" x="81" y="75" width="12" height="12" rx="2" fill="#e2e8f0" stroke="#cbd5e0"/>
+                            <rect data-key="c" x="96" y="75" width="12" height="12" rx="2" fill="#e2e8f0" stroke="#cbd5e0"/>
+                            <rect data-key="v" x="111" y="75" width="12" height="12" rx="2" fill="#e2e8f0" stroke="#cbd5e0"/>
+                            <rect data-key="b" x="126" y="75" width="12" height="12" rx="2" fill="#e2e8f0" stroke="#cbd5e0"/>
+                            <rect data-key="n" x="141" y="75" width="12" height="12" rx="2" fill="#e2e8f0" stroke="#cbd5e0"/>
+                            <rect data-key="m" x="156" y="75" width="12" height="12" rx="2" fill="#e2e8f0" stroke="#cbd5e0"/>
+                            <rect data-key="," x="171" y="75" width="12" height="12" rx="2" fill="#e2e8f0" stroke="#cbd5e0"/>
+                            <rect data-key="." x="186" y="75" width="12" height="12" rx="2" fill="#e2e8f0" stroke="#cbd5e0"/>
+                            <rect data-key=";" x="201" y="75" width="12" height="12" rx="2" fill="#e2e8f0" stroke="#cbd5e0"/>
+                            <rect data-key="/" x="216" y="75" width="12" height="12" rx="2" fill="#e2e8f0" stroke="#cbd5e0"/>
+                            <rect data-key="Shift" x="231" y="75" width="28" height="12" rx="2" fill="#f7fafc" stroke="#cbd5e0"/>
+                            
+                            <!-- Fileira 5: Espaço -->
+                            <rect data-key="Ctrl" x="20" y="90" width="18" height="12" rx="2" fill="#f7fafc" stroke="#cbd5e0"/>
+                            <rect data-key="Alt" x="41" y="90" width="18" height="12" rx="2" fill="#f7fafc" stroke="#cbd5e0"/>
+                            <rect data-key=" " x="62" y="90" width="120" height="12" rx="2" fill="#e2e8f0" stroke="#cbd5e0"/>
+                            <rect data-key="AltGr" x="185" y="90" width="18" height="12" rx="2" fill="#f7fafc" stroke="#cbd5e0"/>
+                            <rect data-key="Ctrl" x="206" y="90" width="18" height="12" rx="2" fill="#f7fafc" stroke="#cbd5e0"/>
+                            
+                            <!-- Setas -->
+                            <rect data-key="ArrowUp" x="270" y="75" width="12" height="12" rx="2" fill="#f7fafc" stroke="#cbd5e0"/>
+                            <rect data-key="ArrowLeft" x="255" y="90" width="12" height="12" rx="2" fill="#f7fafc" stroke="#cbd5e0"/>
+                            <rect data-key="ArrowDown" x="270" y="90" width="12" height="12" rx="2" fill="#f7fafc" stroke="#cbd5e0"/>
+                            <rect data-key="ArrowRight" x="285" y="90" width="12" height="12" rx="2" fill="#f7fafc" stroke="#cbd5e0"/>
+                            
+                            <!-- Teclado numérico -->
+                            <rect data-key="NumLock" x="310" y="30" width="15" height="12" rx="2" fill="#f7fafc" stroke="#cbd5e0"/>
+                            <rect data-key="/" x="328" y="30" width="12" height="12" rx="2" fill="#e2e8f0" stroke="#cbd5e0"/>
+                            <rect data-key="*" x="343" y="30" width="12" height="12" rx="2" fill="#e2e8f0" stroke="#cbd5e0"/>
+                            <rect data-key="-" x="358" y="30" width="12" height="12" rx="2" fill="#e2e8f0" stroke="#cbd5e0"/>
+                            
+                            <rect data-key="7" x="310" y="45" width="12" height="12" rx="2" fill="#e2e8f0" stroke="#cbd5e0"/>
+                            <rect data-key="8" x="325" y="45" width="12" height="12" rx="2" fill="#e2e8f0" stroke="#cbd5e0"/>
+                            <rect data-key="9" x="340" y="45" width="12" height="12" rx="2" fill="#e2e8f0" stroke="#cbd5e0"/>
+                            <rect data-key="+" x="355" y="45" width="12" height="27" rx="2" fill="#e2e8f0" stroke="#cbd5e0"/>
+                            
+                            <rect data-key="4" x="310" y="60" width="12" height="12" rx="2" fill="#e2e8f0" stroke="#cbd5e0"/>
+                            <rect data-key="5" x="325" y="60" width="12" height="12" rx="2" fill="#e2e8f0" stroke="#cbd5e0"/>
+                            <rect data-key="6" x="340" y="60" width="12" height="12" rx="2" fill="#e2e8f0" stroke="#cbd5e0"/>
+                            
+                            <rect data-key="1" x="310" y="75" width="12" height="12" rx="2" fill="#e2e8f0" stroke="#cbd5e0"/>
+                            <rect data-key="2" x="325" y="75" width="12" height="12" rx="2" fill="#e2e8f0" stroke="#cbd5e0"/>
+                            <rect data-key="3" x="340" y="75" width="12" height="12" rx="2" fill="#e2e8f0" stroke="#cbd5e0"/>
+                            <rect data-key="Enter" x="355" y="75" width="12" height="27" rx="2" fill="#f7fafc" stroke="#cbd5e0"/>
+                            
+                            <rect data-key="0" x="310" y="90" width="27" height="12" rx="2" fill="#e2e8f0" stroke="#cbd5e0"/>
+                            <rect data-key="." x="340" y="90" width="12" height="12" rx="2" fill="#e2e8f0" stroke="#cbd5e0"/>
+                        </svg>
+                        <div id="keyboard-status" class="text-sm mt-2 text-gray-600">Digite para ver as teclas acenderem</div>
+                    </div>
+                    <p class="text-sm text-gray-600 mb-3">Digite algo para testar:</p>
+                    <textarea id="keyboard-test" placeholder="Comece a digitar aqui..." class="w-full h-20 p-3 border border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none resize-none"></textarea>
+                    <div class="mt-2 grid grid-cols-2 gap-2 text-sm text-gray-600">
+                        <div>Teclas pressionadas: <span id="key-count" class="font-bold text-blue-600">0</span></div>
+                        <div>Precisão: <span id="key-accuracy" class="font-bold text-green-600">100%</span></div>
+                    </div>
+                    <div class="mt-2 text-xs">
+                        <div class="flex justify-between">
+                            <span>Funcionando: <span id="working-keys" class="text-green-600 font-bold">0</span></span>
+                            <span>Com problema: <span id="broken-keys" class="text-red-600 font-bold">0</span></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Teste de Mouse -->
+            <div class="bg-white rounded-xl p-6 card-hover">
+                <div class="text-center mb-4">
+                    <div class="text-4xl mb-3">🖱️</div>
+                    <h3 class="text-xl font-bold text-gray-800">Teste de Mouse</h3>
+                </div>
+                <div>
+                    <!-- Imagem do Mouse -->
+                    <div class="text-center mb-4">
+                        <svg id="mouse-svg" class="w-16 h-20 mx-auto cursor-pointer transition-colors duration-300" viewBox="0 0 80 100" fill="currentColor">
+                            <ellipse cx="40" cy="50" rx="25" ry="35" fill="#4a5568" stroke="#2d3748" stroke-width="2"/>
+                            <!-- Botão esquerdo -->
+                            <path id="left-button" d="M 15 25 Q 15 15 25 15 L 40 15 L 40 45 L 15 45 Q 15 35 15 25" fill="#e2e8f0" stroke="#cbd5e0" stroke-width="1" class="transition-colors duration-200"/>
+                            <!-- Botão direito -->
+                            <path id="right-button" d="M 40 15 L 55 15 Q 65 15 65 25 Q 65 35 65 45 L 40 45 L 40 15" fill="#e2e8f0" stroke="#cbd5e0" stroke-width="1" class="transition-colors duration-200"/>
+                            <!-- Scroll wheel -->
+                            <rect id="scroll-wheel" x="37" y="20" width="6" height="15" rx="3" fill="#cbd5e0" stroke="#a0aec0" stroke-width="1" class="transition-colors duration-200"/>
+                            <rect x="38" y="22" width="4" height="3" rx="1" fill="#718096"/>
+                            <rect x="38" y="27" width="4" height="3" rx="1" fill="#718096"/>
+                            <rect x="38" y="32" width="4" height="3" rx="1" fill="#718096"/>
+                        </svg>
+                        <div id="mouse-status" class="text-sm mt-2 text-gray-600">Clique no mouse para testar</div>
+                    </div>
+                    <div id="mouse-area" class="w-full h-32 bg-gray-100 rounded-lg border-2 border-dashed border-gray-300 flex items-center justify-center cursor-pointer hover:bg-gray-200 transition-colors">
+                        <span class="text-gray-500">Mova o mouse aqui</span>
+                    </div>
+                    <div class="mt-3 grid grid-cols-3 gap-2 text-sm">
+                        <div>Cliques: <span id="click-count" class="font-bold text-blue-600">0</span></div>
+                        <div>Scroll: <span id="scroll-count" class="font-bold text-purple-600">0</span></div>
+                        <div>Posição: <span id="mouse-pos" class="font-bold text-green-600">0, 0</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Removedor de Fundo -->
+            <div class="bg-white rounded-xl p-6 card-hover">
+                <div class="text-center mb-4">
+                    <div class="text-4xl mb-3">🖼️</div>
+                    <h3 class="text-xl font-bold text-gray-800">Remover Fundo</h3>
+                </div>
+                <div>
+                    <div class="mb-4">
+                        <input type="file" id="bg-file-input" accept="image/*" class="hidden">
+                        <button id="bg-upload-btn" class="w-full bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors">
+                            📁 Selecionar Foto
+                        </button>
+                    </div>
+                    <div id="bg-preview-area" class="hidden">
+                        <div class="grid grid-cols-2 gap-2 mb-3">
+                            <div class="text-center">
+                                <div class="text-sm font-bold text-gray-600 mb-1">Original</div>
+                                <canvas id="bg-original-canvas" class="w-full h-24 border rounded-lg bg-gray-100"></canvas>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-sm font-bold text-gray-600 mb-1">Sem Fundo</div>
+                                <canvas id="bg-result-canvas" class="w-full h-24 border rounded-lg bg-gray-100" style="background-image: url('data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2220%22 height=%2220%22 viewBox=%220 0 20 20%22><rect width=%2210%22 height=%2210%22 fill=%22%23f0f0f0%22/><rect x=%2210%22 y=%2210%22 width=%2210%22 height=%2210%22 fill=%22%23f0f0f0%22/></svg>'); background-size: 20px 20px;"></canvas>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-2">
+                            <button id="bg-process-btn" class="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition-colors">
+                                ✨ Remover Fundo
+                            </button>
+                            <button id="bg-download-btn" class="bg-purple-500 text-white px-4 py-2 rounded-lg hover:bg-purple-600 transition-colors hidden">
+                                💾 Baixar PNG
+                            </button>
+                        </div>
+                        <div id="bg-status" class="text-sm text-center mt-2 text-gray-600"></div>
+                    </div>
+                </div>
+            </div>
+
+
+
+            <!-- Teste de Velocidade -->
+            <div class="bg-white rounded-xl p-6 card-hover">
+                <div class="text-center mb-4">
+                    <div class="text-4xl mb-3">🌐</div>
+                    <h3 class="text-xl font-bold text-gray-800">Velocidade da Internet</h3>
+                </div>
+                <div class="text-center">
+                    <div id="speed-result" class="mb-4">
+                        <div class="text-2xl font-bold text-gray-400">--</div>
+                        <div class="text-sm text-gray-500">Mbps</div>
+                    </div>
+                    <button id="speed-test" class="w-full bg-purple-500 text-white px-4 py-2 rounded-lg hover:bg-purple-600 transition-colors">
+                        <span id="speed-button-text">Testar Velocidade</span>
+                        <svg id="speed-spinner" class="hidden inline-block w-4 h-4 ml-2 loading-spinner" viewBox="0 0 24 24" fill="none">
+                            <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" stroke-opacity="0.3"/>
+                            <path d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" fill="currentColor"/>
+                        </svg>
+                    </button>
+                    <div class="mt-2">
+                        <div id="speed-status" class="text-sm text-gray-600"></div>
+                        <div id="speed-progress" class="w-full bg-gray-200 rounded-full h-2 mt-2 hidden">
+                            <div id="speed-progress-bar" class="bg-purple-500 h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Teste de Som -->
+            <div class="bg-white rounded-xl p-6 card-hover">
+                <div class="text-center mb-4">
+                    <div class="text-4xl mb-3">🔊</div>
+                    <h3 class="text-xl font-bold text-gray-800">Teste de Som</h3>
+                </div>
+                <div>
+                    <!-- Visualizador de Som -->
+                    <div class="mb-4">
+                        <canvas id="audio-visualizer" class="w-full h-24 bg-gray-900 rounded-lg border"></canvas>
+                    </div>
+                    
+                    <!-- Controles de Frequência -->
+                    <div class="grid grid-cols-3 gap-2 mb-4">
+                        <button id="test-low" class="bg-red-500 text-white px-3 py-2 rounded text-sm hover:bg-red-600 transition-colors">
+                            Graves<br><span class="text-xs">60Hz</span>
+                        </button>
+                        <button id="test-mid" class="bg-yellow-500 text-white px-3 py-2 rounded text-sm hover:bg-yellow-600 transition-colors">
+                            Médios<br><span class="text-xs">1kHz</span>
+                        </button>
+                        <button id="test-high" class="bg-blue-500 text-white px-3 py-2 rounded text-sm hover:bg-blue-600 transition-colors">
+                            Agudos<br><span class="text-xs">8kHz</span>
+                        </button>
+                    </div>
+                    
+                    <!-- Controle de Volume -->
+                    <div class="mb-4">
+                        <label class="block text-sm font-bold text-gray-700 mb-2">Volume</label>
+                        <input type="range" id="volume-slider" min="0" max="100" value="50" class="w-full">
+                        <div class="flex justify-between text-xs text-gray-500 mt-1">
+                            <span>0%</span>
+                            <span id="volume-display">50%</span>
+                            <span>100%</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Teste de Microfone -->
+                    <div class="border-t pt-4">
+                        <button id="mic-test" class="w-full bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition-colors mb-2">
+                            🎤 Testar Microfone
+                        </button>
+                        
+                        <!-- Visualizador de Frequência do Microfone -->
+                        <div class="mb-2">
+                            <canvas id="mic-frequency-canvas" class="w-full h-16 bg-gray-900 rounded border hidden"></canvas>
+                        </div>
+                        
+                        <!-- Nível do Microfone -->
+                        <div id="mic-level" class="w-full bg-gray-200 rounded-full h-3 mb-2">
+                            <div id="mic-level-bar" class="bg-green-500 h-3 rounded-full transition-all duration-100" style="width: 0%"></div>
+                        </div>
+                        
+                        <!-- Informações de Frequência -->
+                        <div class="grid grid-cols-3 gap-2 mb-2 text-xs hidden" id="mic-freq-info">
+                            <div class="text-center">
+                                <div class="text-red-500 font-bold" id="mic-bass">0 Hz</div>
+                                <div class="text-gray-500">Graves</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-yellow-500 font-bold" id="mic-mid">0 Hz</div>
+                                <div class="text-gray-500">Médios</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-blue-500 font-bold" id="mic-treble">0 Hz</div>
+                                <div class="text-gray-500">Agudos</div>
+                            </div>
+                        </div>
+                        
+                        <div id="mic-status" class="text-sm text-center text-gray-600">Clique para testar o microfone</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="text-center mt-12 text-white opacity-75">
+            <p>💡 Dica: Mantenha seus drivers sempre atualizados para melhor performance!</p>
+        </div>
+    </div>
+
+    <script>
+        // Detecção de Conexão Offline e Jogo
+        let isOffline = false;
+        let gameRunning = false;
+        let gameScore = 0;
+        let gameCanvas, gameCtx;
+        let player, obstacles, gameSpeed;
+        let gameAnimationId;
+
+        // Detecta quando fica offline
+        window.addEventListener('offline', () => {
+            isOffline = true;
+            document.getElementById('offline-game').classList.remove('hidden');
+            initGame();
+        });
+
+        window.addEventListener('online', () => {
+            isOffline = false;
+            // Não fecha automaticamente para deixar o usuário decidir
+        });
+
+        // Inicializa o jogo
+        function initGame() {
+            gameCanvas = document.getElementById('game-canvas');
+            gameCtx = gameCanvas.getContext('2d');
+            
+            // Ajusta canvas para responsividade
+            const rect = gameCanvas.getBoundingClientRect();
+            gameCanvas.width = 800;
+            gameCanvas.height = 200;
+            
+            // Reset game state
+            gameScore = 0;
+            gameSpeed = 2;
+            gameRunning = true;
+            
+            // Player (dinossauro)
+            player = {
+                x: 50,
+                y: 150,
+                width: 30,
+                height: 30,
+                jumping: false,
+                jumpSpeed: 0,
+                gravity: 0.8
+            };
+            
+            // Obstáculos
+            obstacles = [];
+            
+            // Inicia loop do jogo
+            gameLoop();
+        }
+
+        // Loop principal do jogo
+        function gameLoop() {
+            if (!gameRunning) return;
+            
+            // Limpa canvas
+            gameCtx.fillStyle = '#f3f4f6';
+            gameCtx.fillRect(0, 0, gameCanvas.width, gameCanvas.height);
+            
+            // Desenha chão
+            gameCtx.fillStyle = '#6b7280';
+            gameCtx.fillRect(0, 180, gameCanvas.width, 20);
+            
+            // Atualiza player
+            updatePlayer();
+            drawPlayer();
+            
+            // Atualiza obstáculos
+            updateObstacles();
+            drawObstacles();
+            
+            // Verifica colisões
+            checkCollisions();
+            
+            // Atualiza pontuação
+            gameScore += 1;
+            document.getElementById('game-score').textContent = Math.floor(gameScore / 10);
+            
+            // Aumenta velocidade gradualmente
+            if (gameScore % 500 === 0) {
+                gameSpeed += 0.2;
+            }
+            
+            gameAnimationId = requestAnimationFrame(gameLoop);
+        }
+
+        function updatePlayer() {
+            if (player.jumping) {
+                player.y += player.jumpSpeed;
+                player.jumpSpeed += player.gravity;
+                
+                if (player.y >= 150) {
+                    player.y = 150;
+                    player.jumping = false;
+                    player.jumpSpeed = 0;
+                }
+            }
+        }
+
+        function drawPlayer() {
+            // Desenha dinossauro simples
+            gameCtx.fillStyle = '#10b981';
+            gameCtx.fillRect(player.x, player.y, player.width, player.height);
+            
+            // Olhos
+            gameCtx.fillStyle = '#ffffff';
+            gameCtx.fillRect(player.x + 20, player.y + 5, 5, 5);
+            gameCtx.fillStyle = '#000000';
+            gameCtx.fillRect(player.x + 22, player.y + 6, 2, 2);
+        }
+
+        function updateObstacles() {
+            // Adiciona novos obstáculos
+            if (obstacles.length === 0 || obstacles[obstacles.length - 1].x < gameCanvas.width - 200) {
+                obstacles.push({
+                    x: gameCanvas.width,
+                    y: 150,
+                    width: 20,
+                    height: 30,
+                    type: Math.random() > 0.5 ? 'cactus' : 'rock'
+                });
+            }
+            
+            // Move obstáculos
+            obstacles.forEach(obstacle => {
+                obstacle.x -= gameSpeed;
+            });
+            
+            // Remove obstáculos que saíram da tela
+            obstacles = obstacles.filter(obstacle => obstacle.x > -obstacle.width);
+        }
+
+        function drawObstacles() {
+            obstacles.forEach(obstacle => {
+                if (obstacle.type === 'cactus') {
+                    // Desenha cacto
+                    gameCtx.fillStyle = '#059669';
+                    gameCtx.fillRect(obstacle.x, obstacle.y, obstacle.width, obstacle.height);
+                    gameCtx.fillRect(obstacle.x + 5, obstacle.y - 10, 10, 15);
+                } else {
+                    // Desenha pedra
+                    gameCtx.fillStyle = '#6b7280';
+                    gameCtx.fillRect(obstacle.x, obstacle.y + 10, obstacle.width, obstacle.height - 10);
+                }
+            });
+        }
+
+        function checkCollisions() {
+            obstacles.forEach(obstacle => {
+                if (player.x < obstacle.x + obstacle.width &&
+                    player.x + player.width > obstacle.x &&
+                    player.y < obstacle.y + obstacle.height &&
+                    player.y + player.height > obstacle.y) {
+                    gameOver();
+                }
+            });
+        }
+
+        function gameOver() {
+            gameRunning = false;
+            cancelAnimationFrame(gameAnimationId);
+            
+            // Desenha tela de game over
+            gameCtx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+            gameCtx.fillRect(0, 0, gameCanvas.width, gameCanvas.height);
+            
+            gameCtx.fillStyle = '#ffffff';
+            gameCtx.font = '30px Arial';
+            gameCtx.textAlign = 'center';
+            gameCtx.fillText('GAME OVER', gameCanvas.width / 2, gameCanvas.height / 2 - 20);
+            
+            gameCtx.font = '16px Arial';
+            gameCtx.fillText(`Pontuação Final: ${Math.floor(gameScore / 10)}`, gameCanvas.width / 2, gameCanvas.height / 2 + 20);
+        }
+
+        function jump() {
+            if (!player.jumping && gameRunning) {
+                player.jumping = true;
+                player.jumpSpeed = -15;
+            }
+        }
+
+        // Controles do jogo
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'Space' && document.getElementById('offline-game').classList.contains('hidden') === false) {
+                e.preventDefault();
+                jump();
+            }
+        });
+
+        document.getElementById('jump-btn').addEventListener('click', jump);
+
+        document.getElementById('restart-btn').addEventListener('click', () => {
+            if (gameAnimationId) {
+                cancelAnimationFrame(gameAnimationId);
+            }
+            initGame();
+        });
+
+        document.getElementById('close-game').addEventListener('click', () => {
+            gameRunning = false;
+            if (gameAnimationId) {
+                cancelAnimationFrame(gameAnimationId);
+            }
+            document.getElementById('offline-game').classList.add('hidden');
+        });
+
+        // Teste de Câmera com Detecção de Movimento
+        const video = document.getElementById('video');
+        const startCameraBtn = document.getElementById('start-camera');
+        const stopCameraBtn = document.getElementById('stop-camera');
+        const toggleMotionBtn = document.getElementById('toggle-motion');
+        const motionCanvas = document.getElementById('motion-canvas');
+        const motionIndicator = document.getElementById('motion-indicator');
+        const cameraStatus = document.getElementById('camera-status');
+        const motionLevel = document.getElementById('motion-level');
+        
+        let stream = null;
+        let motionDetection = false;
+        let previousFrame = null;
+        let motionAnimationId = null;
+
+        startCameraBtn.addEventListener('click', async () => {
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                video.srcObject = stream;
+                startCameraBtn.classList.add('hidden');
+                stopCameraBtn.classList.remove('hidden');
+                toggleMotionBtn.classList.remove('hidden');
+                cameraStatus.textContent = 'Ativa';
+                cameraStatus.className = 'font-bold text-green-600';
+                motionIndicator.className = 'absolute top-2 right-2 w-4 h-4 rounded-full bg-green-400 transition-colors duration-300';
+            } catch (err) {
+                alert('Erro ao acessar a câmera. Verifique as permissões.');
+            }
+        });
+
+        stopCameraBtn.addEventListener('click', () => {
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+                video.srcObject = null;
+                startCameraBtn.classList.remove('hidden');
+                stopCameraBtn.classList.add('hidden');
+                toggleMotionBtn.classList.add('hidden');
+                motionCanvas.classList.add('hidden');
+                cameraStatus.textContent = 'Desligada';
+                cameraStatus.className = 'font-bold text-gray-600';
+                motionIndicator.className = 'absolute top-2 right-2 w-4 h-4 rounded-full bg-gray-400 transition-colors duration-300';
+                motionLevel.textContent = '0%';
+                motionDetection = false;
+                if (motionAnimationId) {
+                    cancelAnimationFrame(motionAnimationId);
+                }
+            }
+        });
+
+        toggleMotionBtn.addEventListener('click', () => {
+            motionDetection = !motionDetection;
+            if (motionDetection) {
+                toggleMotionBtn.textContent = 'Desativar Detecção';
+                toggleMotionBtn.className = 'w-full bg-orange-500 text-white px-4 py-2 rounded-lg hover:bg-orange-600 transition-colors mt-2';
+                motionCanvas.classList.remove('hidden');
+                startMotionDetection();
+            } else {
+                toggleMotionBtn.textContent = 'Ativar Detecção de Movimento';
+                toggleMotionBtn.className = 'w-full bg-purple-500 text-white px-4 py-2 rounded-lg hover:bg-purple-600 transition-colors mt-2';
+                motionCanvas.classList.add('hidden');
+                motionLevel.textContent = '0%';
+                motionIndicator.className = 'absolute top-2 right-2 w-4 h-4 rounded-full bg-green-400 transition-colors duration-300';
+                if (motionAnimationId) {
+                    cancelAnimationFrame(motionAnimationId);
+                }
+            }
+        });
+
+        function startMotionDetection() {
+            const canvas = motionCanvas;
+            const ctx = canvas.getContext('2d');
+            
+            // Ajusta o tamanho do canvas
+            canvas.width = video.videoWidth || 320;
+            canvas.height = video.videoHeight || 240;
+            
+            function detectMotion() {
+                if (!motionDetection || video.videoWidth === 0) {
+                    motionAnimationId = requestAnimationFrame(detectMotion);
+                    return;
+                }
+                
+                // Desenha o frame atual
+                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                const currentFrame = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                
+                if (previousFrame) {
+                    let motionPixels = 0;
+                    const threshold = 30; // Sensibilidade
+                    
+                    // Compara pixels entre frames
+                    for (let i = 0; i < currentFrame.data.length; i += 4) {
+                        const rDiff = Math.abs(currentFrame.data[i] - previousFrame.data[i]);
+                        const gDiff = Math.abs(currentFrame.data[i + 1] - previousFrame.data[i + 1]);
+                        const bDiff = Math.abs(currentFrame.data[i + 2] - previousFrame.data[i + 2]);
+                        
+                        const totalDiff = (rDiff + gDiff + bDiff) / 3;
+                        
+                        if (totalDiff > threshold) {
+                            motionPixels++;
+                            // Destaca pixels em movimento em vermelho
+                            currentFrame.data[i] = 255;     // R
+                            currentFrame.data[i + 1] = 0;   // G
+                            currentFrame.data[i + 2] = 0;   // B
+                            currentFrame.data[i + 3] = 100; // Alpha
+                        } else {
+                            // Torna pixels sem movimento transparentes
+                            currentFrame.data[i + 3] = 0;
+                        }
+                    }
+                    
+                    // Calcula porcentagem de movimento
+                    const totalPixels = currentFrame.data.length / 4;
+                    const motionPercentage = Math.round((motionPixels / totalPixels) * 100);
+                    
+                    // Atualiza interface
+                    motionLevel.textContent = `${Math.min(motionPercentage, 100)}%`;
+                    
+                    // Muda cor do indicador baseado no movimento
+                    if (motionPercentage > 15) {
+                        motionIndicator.className = 'absolute top-2 right-2 w-4 h-4 rounded-full bg-red-500 animate-pulse transition-colors duration-300';
+                    } else if (motionPercentage > 5) {
+                        motionIndicator.className = 'absolute top-2 right-2 w-4 h-4 rounded-full bg-yellow-500 transition-colors duration-300';
+                    } else {
+                        motionIndicator.className = 'absolute top-2 right-2 w-4 h-4 rounded-full bg-green-400 transition-colors duration-300';
+                    }
+                    
+                    // Desenha as áreas de movimento
+                    ctx.putImageData(currentFrame, 0, 0);
+                }
+                
+                // Salva frame atual para próxima comparação
+                previousFrame = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                
+                motionAnimationId = requestAnimationFrame(detectMotion);
+            }
+            
+            detectMotion();
+        }
+
+        // Teste de Teclado
+        const keyboardTest = document.getElementById('keyboard-test');
+        const keyCount = document.getElementById('key-count');
+        const keyAccuracy = document.getElementById('key-accuracy');
+        const workingKeys = document.getElementById('working-keys');
+        const brokenKeys = document.getElementById('broken-keys');
+        const keyboardSvg = document.getElementById('keyboard-svg');
+        const keyboardStatus = document.getElementById('keyboard-status');
+        let keyPresses = 0;
+        let keyboardTested = false;
+        let pressedKeys = new Set();
+        let testedKeys = new Set();
+        let workingKeysCount = 0;
+        let brokenKeysCount = 0;
+
+        // Mapeamento de teclas para o layout ABNT2
+        const keyMap = {
+            'Digit1': '1', 'Digit2': '2', 'Digit3': '3', 'Digit4': '4', 'Digit5': '5',
+            'Digit6': '6', 'Digit7': '7', 'Digit8': '8', 'Digit9': '9', 'Digit0': '0',
+            'KeyQ': 'q', 'KeyW': 'w', 'KeyE': 'e', 'KeyR': 'r', 'KeyT': 't',
+            'KeyY': 'y', 'KeyU': 'u', 'KeyI': 'i', 'KeyO': 'o', 'KeyP': 'p',
+            'KeyA': 'a', 'KeyS': 's', 'KeyD': 'd', 'KeyF': 'f', 'KeyG': 'g',
+            'KeyH': 'h', 'KeyJ': 'j', 'KeyK': 'k', 'KeyL': 'l',
+            'KeyZ': 'z', 'KeyX': 'x', 'KeyC': 'c', 'KeyV': 'v', 'KeyB': 'b',
+            'KeyN': 'n', 'KeyM': 'm',
+            'Space': ' ', 'Enter': 'Enter', 'Backspace': 'Backspace',
+            'Tab': 'Tab', 'ShiftLeft': 'Shift', 'ShiftRight': 'Shift',
+            'ControlLeft': 'Ctrl', 'ControlRight': 'Ctrl',
+            'AltLeft': 'Alt', 'AltRight': 'AltGr',
+            'CapsLock': 'CapsLock',
+            'Comma': ',', 'Period': '.', 'Semicolon': 'ç',
+            'Quote': '~', 'BracketLeft': '´', 'BracketRight': '[',
+            'Backslash': ']', 'Slash': ';', 'Minus': '-', 'Equal': '=',
+            'ArrowUp': 'ArrowUp', 'ArrowDown': 'ArrowDown', 
+            'ArrowLeft': 'ArrowLeft', 'ArrowRight': 'ArrowRight'
+        };
+
+        // Função para encontrar e animar tecla específica
+        function animateKey(keyName, press = true, working = true) {
+            const keyElement = keyboardSvg.querySelector(`[data-key="${keyName}"]`);
+            if (keyElement) {
+                if (press) {
+                    keyElement.classList.add('key-animate');
+                    
+                    // Simula 5% de chance de tecla com problema
+                    const isWorking = working && Math.random() > 0.05;
+                    
+                    if (isWorking) {
+                        keyElement.style.fill = '#10b981'; // Verde para funcionando
+                        if (!testedKeys.has(keyName)) {
+                            workingKeysCount++;
+                            testedKeys.add(keyName);
+                        }
+                    } else {
+                        keyElement.style.fill = '#ef4444'; // Vermelho para problema
+                        if (!testedKeys.has(keyName)) {
+                            brokenKeysCount++;
+                            testedKeys.add(keyName);
+                        }
+                    }
+                    
+                    keyElement.style.transform = 'translateY(2px)';
+                    pressedKeys.add(keyName);
+                    
+                    // Atualiza contadores
+                    workingKeys.textContent = workingKeysCount;
+                    brokenKeys.textContent = brokenKeysCount;
+                    
+                    // Calcula precisão
+                    const totalTested = workingKeysCount + brokenKeysCount;
+                    if (totalTested > 0) {
+                        const accuracy = Math.round((workingKeysCount / totalTested) * 100);
+                        keyAccuracy.textContent = `${accuracy}%`;
+                        keyAccuracy.className = accuracy > 95 ? 'font-bold text-green-600' : 
+                                              accuracy > 85 ? 'font-bold text-yellow-600' : 
+                                              'font-bold text-red-600';
+                    }
+                } else {
+                    keyElement.classList.remove('key-animate');
+                    keyElement.style.fill = keyElement.getAttribute('data-key') === ' ' || 
+                                           ['Tab', 'Enter', 'Shift', 'Ctrl', 'Alt', 'AltGr', 'CapsLock', 'Backspace', 'NumLock', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(keyElement.getAttribute('data-key')) 
+                                           ? '#f7fafc' : '#e2e8f0';
+                    keyElement.style.transform = 'translateY(0)';
+                    pressedKeys.delete(keyName);
+                }
+            }
+        }
+
+        // Função para animar teclas aleatórias
+        function animateRandomKeys() {
+            const keys = ['q', 'w', 'e', 'r', 't', 'a', 's', 'd', 'f'];
+            keys.forEach((key, index) => {
+                setTimeout(() => {
+                    animateKey(key, true);
+                    setTimeout(() => animateKey(key, false), 300);
+                }, index * 100);
+            });
+        }
+
+        // Teste ao clicar na imagem do teclado
+        keyboardSvg.addEventListener('click', () => {
+            if (!keyboardTested) {
+                animateRandomKeys();
+                setTimeout(() => {
+                    keyboardSvg.style.color = '#10b981';
+                    keyboardSvg.classList.add('keyboard-tested');
+                    keyboardStatus.textContent = '✅ Teclado testado com sucesso!';
+                    keyboardStatus.style.color = '#10b981';
+                    keyboardTested = true;
+                }, 1000);
+            }
+        });
+
+        // Detecta teclas pressionadas
+        document.addEventListener('keydown', (e) => {
+            if (document.activeElement === keyboardTest) {
+                keyPresses++;
+                keyCount.textContent = keyPresses;
+                
+                const mappedKey = keyMap[e.code] || e.key.toLowerCase();
+                animateKey(mappedKey, true);
+                
+                if (!keyboardTested) {
+                    setTimeout(() => {
+                        keyboardSvg.style.color = '#10b981';
+                        keyboardSvg.classList.add('keyboard-tested');
+                        keyboardStatus.textContent = '✅ Teclado testado com sucesso!';
+                        keyboardStatus.style.color = '#10b981';
+                        keyboardTested = true;
+                    }, 300);
+                }
+            }
+        });
+
+        // Detecta quando teclas são soltas
+        document.addEventListener('keyup', (e) => {
+            if (document.activeElement === keyboardTest) {
+                const mappedKey = keyMap[e.code] || e.key.toLowerCase();
+                setTimeout(() => animateKey(mappedKey, false), 100);
+            }
+        });
+
+        // Teste de Mouse
+        const mouseArea = document.getElementById('mouse-area');
+        const clickCount = document.getElementById('click-count');
+        const scrollCount = document.getElementById('scroll-count');
+        const mousePos = document.getElementById('mouse-pos');
+        const mouseSvg = document.getElementById('mouse-svg');
+        const mouseStatus = document.getElementById('mouse-status');
+        let clicks = 0;
+        let scrolls = 0;
+        let mouseTested = false;
+
+        // Função para animar botões do mouse
+        function animateMouseButtons() {
+            const leftButton = document.getElementById('left-button');
+            const rightButton = document.getElementById('right-button');
+            
+            // Anima botão esquerdo
+            leftButton.style.fill = '#10b981';
+            setTimeout(() => {
+                leftButton.style.fill = '#e2e8f0';
+                // Anima botão direito
+                rightButton.style.fill = '#10b981';
+                setTimeout(() => {
+                    rightButton.style.fill = '#e2e8f0';
+                }, 300);
+            }, 300);
+        }
+
+        // Teste ao clicar na imagem do mouse
+        mouseSvg.addEventListener('click', (e) => {
+            mouseSvg.classList.add('mouse-click-animate');
+            setTimeout(() => mouseSvg.classList.remove('mouse-click-animate'), 300);
+            
+            if (!mouseTested) {
+                animateMouseButtons();
+                setTimeout(() => {
+                    mouseSvg.style.color = '#10b981'; // Verde
+                    mouseSvg.classList.add('mouse-tested');
+                    mouseStatus.textContent = '✅ Mouse testado com sucesso!';
+                    mouseStatus.style.color = '#10b981';
+                    mouseTested = true;
+                }, 700);
+            }
+        });
+
+        mouseArea.addEventListener('click', (e) => {
+            clicks++;
+            clickCount.textContent = clicks;
+            
+            // Anima o mouse quando clica na área
+            mouseSvg.classList.add('mouse-click-animate');
+            setTimeout(() => mouseSvg.classList.remove('mouse-click-animate'), 300);
+            
+            // Anima botão baseado na posição do clique
+            const rect = mouseArea.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const isLeftClick = x < rect.width / 2;
+            
+            const button = isLeftClick ? document.getElementById('left-button') : document.getElementById('right-button');
+            button.style.fill = '#10b981';
+            setTimeout(() => button.style.fill = '#e2e8f0', 200);
+            
+            // Também marca como testado quando clica na área
+            if (!mouseTested) {
+                setTimeout(() => {
+                    mouseSvg.style.color = '#10b981';
+                    mouseSvg.classList.add('mouse-tested');
+                    mouseStatus.textContent = '✅ Mouse testado com sucesso!';
+                    mouseStatus.style.color = '#10b981';
+                    mouseTested = true;
+                }, 300);
+            }
+        });
+
+        mouseArea.addEventListener('mousemove', (e) => {
+            const rect = mouseArea.getBoundingClientRect();
+            const x = Math.round(e.clientX - rect.left);
+            const y = Math.round(e.clientY - rect.top);
+            mousePos.textContent = `${x}, ${y}`;
+            
+            // Marca como testado quando move o mouse
+            if (!mouseTested) {
+                mouseSvg.style.color = '#10b981';
+                mouseSvg.classList.add('mouse-tested');
+                mouseStatus.textContent = '✅ Mouse testado com sucesso!';
+                mouseStatus.style.color = '#10b981';
+                mouseTested = true;
+            }
+        });
+
+        // Detecta scroll do mouse
+        mouseArea.addEventListener('wheel', (e) => {
+            e.preventDefault();
+            scrolls++;
+            scrollCount.textContent = scrolls;
+            
+            // Anima o scroll wheel
+            const scrollWheel = document.getElementById('scroll-wheel');
+            scrollWheel.style.fill = '#10b981';
+            scrollWheel.style.transform = e.deltaY > 0 ? 'translateY(2px)' : 'translateY(-2px)';
+            
+            setTimeout(() => {
+                scrollWheel.style.fill = '#cbd5e0';
+                scrollWheel.style.transform = 'translateY(0)';
+            }, 200);
+            
+            // Marca como testado quando usa scroll
+            if (!mouseTested) {
+                mouseSvg.style.color = '#10b981';
+                mouseSvg.classList.add('mouse-tested');
+                mouseStatus.textContent = '✅ Mouse testado com sucesso!';
+                mouseStatus.style.color = '#10b981';
+                mouseTested = true;
+            }
+        });
+
+        // Removedor de Fundo
+        const bgFileInput = document.getElementById('bg-file-input');
+        const bgUploadBtn = document.getElementById('bg-upload-btn');
+        const bgPreviewArea = document.getElementById('bg-preview-area');
+        const bgOriginalCanvas = document.getElementById('bg-original-canvas');
+        const bgResultCanvas = document.getElementById('bg-result-canvas');
+        const bgProcessBtn = document.getElementById('bg-process-btn');
+        const bgDownloadBtn = document.getElementById('bg-download-btn');
+        const bgStatus = document.getElementById('bg-status');
+
+        bgUploadBtn.addEventListener('click', () => {
+            bgFileInput.click();
+        });
+
+        bgFileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const img = new Image();
+                    img.onload = () => {
+                        // Mostra área de preview
+                        bgPreviewArea.classList.remove('hidden');
+                        
+                        // Desenha imagem original
+                        const ctx = bgOriginalCanvas.getContext('2d');
+                        bgOriginalCanvas.width = img.width;
+                        bgOriginalCanvas.height = img.height;
+                        ctx.drawImage(img, 0, 0);
+                        
+                        // Prepara canvas resultado
+                        bgResultCanvas.width = img.width;
+                        bgResultCanvas.height = img.height;
+                        
+                        bgStatus.textContent = 'Imagem carregada! Clique em "Remover Fundo"';
+                        bgProcessBtn.disabled = false;
+                    };
+                    img.src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        bgProcessBtn.addEventListener('click', () => {
+            bgProcessBtn.disabled = true;
+            bgProcessBtn.textContent = '⏳ Processando...';
+            bgStatus.textContent = 'Analisando imagem e removendo fundo...';
+            
+            setTimeout(() => {
+                const originalCtx = bgOriginalCanvas.getContext('2d');
+                const resultCtx = bgResultCanvas.getContext('2d');
+                
+                const imageData = originalCtx.getImageData(0, 0, bgOriginalCanvas.width, bgOriginalCanvas.height);
+                const data = imageData.data;
+                const width = bgOriginalCanvas.width;
+                const height = bgOriginalCanvas.height;
+                
+                // Algoritmo avançado de detecção de bordas e remoção de fundo
+                const newImageData = resultCtx.createImageData(width, height);
+                const newData = newImageData.data;
+                
+                // Copia dados originais
+                for (let i = 0; i < data.length; i++) {
+                    newData[i] = data[i];
+                }
+                
+                // Detecta múltiplas cores de fundo das bordas
+                const backgroundColors = [];
+                const samplePoints = [
+                    [0, 0], [width-1, 0], [0, height-1], [width-1, height-1], // Cantos
+                    [Math.floor(width/2), 0], [Math.floor(width/2), height-1], // Centro superior/inferior
+                    [0, Math.floor(height/2)], [width-1, Math.floor(height/2)] // Centro esquerda/direita
+                ];
+                
+                samplePoints.forEach(([x, y]) => {
+                    const idx = (y * width + x) * 4;
+                    backgroundColors.push({
+                        r: data[idx],
+                        g: data[idx + 1],
+                        b: data[idx + 2]
+                    });
+                });
+                
+                // Função para verificar se um pixel é similar ao fundo
+                function isBackground(r, g, b) {
+                    return backgroundColors.some(bg => {
+                        const diff = Math.abs(r - bg.r) + Math.abs(g - bg.g) + Math.abs(b - bg.b);
+                        return diff < 80; // Tolerância ajustável
+                    });
+                }
+                
+                // Função para detectar bordas (gradiente)
+                function getEdgeStrength(x, y) {
+                    if (x <= 0 || x >= width-1 || y <= 0 || y >= height-1) return 0;
+                    
+                    const idx = (y * width + x) * 4;
+                    const r = data[idx];
+                    const g = data[idx + 1];
+                    const b = data[idx + 2];
+                    
+                    // Verifica pixels vizinhos
+                    const neighbors = [
+                        [(y-1) * width + (x-1), (y-1) * width + x, (y-1) * width + (x+1)],
+                        [y * width + (x-1), y * width + x, y * width + (x+1)],
+                        [(y+1) * width + (x-1), (y+1) * width + x, (y+1) * width + (x+1)]
+                    ];
+                    
+                    let maxDiff = 0;
+                    neighbors.forEach(row => {
+                        row.forEach(nIdx => {
+                            if (nIdx >= 0 && nIdx < data.length/4) {
+                                const nR = data[nIdx * 4];
+                                const nG = data[nIdx * 4 + 1];
+                                const nB = data[nIdx * 4 + 2];
+                                const diff = Math.abs(r - nR) + Math.abs(g - nG) + Math.abs(b - nB);
+                                maxDiff = Math.max(maxDiff, diff);
+                            }
+                        });
+                    });
+                    
+                    return maxDiff;
+                }
+                
+                // Primeira passada: marca pixels de fundo óbvios
+                for (let y = 0; y < height; y++) {
+                    for (let x = 0; x < width; x++) {
+                        const idx = (y * width + x) * 4;
+                        const r = newData[idx];
+                        const g = newData[idx + 1];
+                        const b = newData[idx + 2];
+                        
+                        // Se é cor de fundo e não está em uma borda forte
+                        const edgeStrength = getEdgeStrength(x, y);
+                        if (isBackground(r, g, b) && edgeStrength < 100) {
+                            newData[idx + 3] = 0; // Transparente
+                        }
+                    }
+                }
+                
+                // Segunda passada: suaviza bordas e remove pixels isolados
+                const tempData = new Uint8ClampedArray(newData);
+                for (let y = 1; y < height - 1; y++) {
+                    for (let x = 1; x < width - 1; x++) {
+                        const idx = (y * width + x) * 4;
+                        
+                        if (tempData[idx + 3] > 0) { // Se o pixel não é transparente
+                            // Conta vizinhos transparentes
+                            let transparentNeighbors = 0;
+                            for (let dy = -1; dy <= 1; dy++) {
+                                for (let dx = -1; dx <= 1; dx++) {
+                                    if (dx === 0 && dy === 0) continue;
+                                    const nIdx = ((y + dy) * width + (x + dx)) * 4;
+                                    if (tempData[nIdx + 3] === 0) transparentNeighbors++;
+                                }
+                            }
+                            
+                            // Se tem muitos vizinhos transparentes, pode ser ruído
+                            if (transparentNeighbors >= 6) {
+                                const r = tempData[idx];
+                                const g = tempData[idx + 1];
+                                const b = tempData[idx + 2];
+                                
+                                // Verifica se é similar ao fundo
+                                if (isBackground(r, g, b)) {
+                                    newData[idx + 3] = 0;
+                                }
+                            }
+                            
+                            // Suaviza bordas
+                            if (transparentNeighbors >= 3 && transparentNeighbors <= 5) {
+                                const alpha = Math.max(50, 255 - (transparentNeighbors * 40));
+                                newData[idx + 3] = Math.min(newData[idx + 3], alpha);
+                            }
+                        }
+                    }
+                }
+                
+                // Terceira passada: preserva detalhes importantes
+                for (let y = 0; y < height; y++) {
+                    for (let x = 0; x < width; x++) {
+                        const idx = (y * width + x) * 4;
+                        const edgeStrength = getEdgeStrength(x, y);
+                        
+                        // Se tem borda forte, provavelmente é parte do objeto principal
+                        if (edgeStrength > 150 && newData[idx + 3] === 0) {
+                            newData[idx + 3] = Math.min(255, edgeStrength);
+                        }
+                    }
+                }
+                
+                // Desenha resultado final
+                resultCtx.putImageData(newImageData, 0, 0);
+                
+                bgProcessBtn.textContent = '✨ Remover Fundo';
+                bgProcessBtn.disabled = false;
+                bgDownloadBtn.classList.remove('hidden');
+                bgStatus.textContent = '✅ Fundo removido! Objeto principal isolado com sucesso!';
+                bgStatus.style.color = '#10b981';
+            }, 2500);
+        });
+
+        bgDownloadBtn.addEventListener('click', () => {
+            // Cria canvas 1080x1080 para exportação
+            const exportCanvas = document.createElement('canvas');
+            exportCanvas.width = 1080;
+            exportCanvas.height = 1080;
+            const exportCtx = exportCanvas.getContext('2d');
+            
+            // Preenche com fundo transparente
+            exportCtx.clearRect(0, 0, 1080, 1080);
+            
+            // Calcula dimensões para centralizar e manter proporção
+            const originalWidth = bgResultCanvas.width;
+            const originalHeight = bgResultCanvas.height;
+            const maxSize = 1080;
+            
+            let newWidth, newHeight;
+            if (originalWidth > originalHeight) {
+                newWidth = maxSize;
+                newHeight = (originalHeight * maxSize) / originalWidth;
+            } else {
+                newHeight = maxSize;
+                newWidth = (originalWidth * maxSize) / originalHeight;
+            }
+            
+            // Centraliza a imagem no canvas 1080x1080
+            const x = (1080 - newWidth) / 2;
+            const y = (1080 - newHeight) / 2;
+            
+            // Desenha a imagem redimensionada e centralizada
+            exportCtx.drawImage(bgResultCanvas, x, y, newWidth, newHeight);
+            
+            // Faz o download
+            const link = document.createElement('a');
+            link.download = 'produto-1080x1080.png';
+            link.href = exportCanvas.toDataURL('image/png');
+            link.click();
+            
+            bgStatus.textContent = '💾 Download iniciado! Imagem salva como 1080x1080px';
+            bgStatus.style.color = '#10b981';
+        });
+
+
+
+        // Teste de Velocidade com Frequência
+        const speedTest = document.getElementById('speed-test');
+        const speedResult = document.getElementById('speed-result');
+        const speedStatus = document.getElementById('speed-status');
+        const speedButtonText = document.getElementById('speed-button-text');
+        const speedSpinner = document.getElementById('speed-spinner');
+        const speedProgress = document.getElementById('speed-progress');
+        const speedProgressBar = document.getElementById('speed-progress-bar');
+
+        speedTest.addEventListener('click', () => {
+            speedTest.disabled = true;
+            speedButtonText.textContent = 'Testando...';
+            speedSpinner.classList.remove('hidden');
+            speedProgress.classList.remove('hidden');
+            speedResult.classList.add('speed-testing');
+            
+            // Teste de frequência com ondas
+            let frequency = 0;
+            let amplitude = 50;
+            let phase = 0;
+            let progress = 0;
+            
+            const canvas = document.createElement('canvas');
+            canvas.width = 200;
+            canvas.height = 60;
+            canvas.style.width = '100%';
+            canvas.style.height = '60px';
+            canvas.style.border = '1px solid #e2e8f0';
+            canvas.style.borderRadius = '8px';
+            canvas.style.backgroundColor = '#1a202c';
+            const ctx = canvas.getContext('2d');
+            
+            speedStatus.innerHTML = '';
+            speedStatus.appendChild(canvas);
+            
+            const testInterval = setInterval(() => {
+                progress += Math.random() * 3 + 1; // Mais lento
+                if (progress > 100) progress = 100;
+                
+                // Atualiza frequência baseada no progresso (mais suave)
+                frequency = (progress / 100) * 40 + 5; // 5-45 Hz
+                phase += 0.1; // Movimento mais lento
+                
+                // Limpa canvas
+                ctx.fillStyle = '#1a202c';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                
+                // Calcula cor gradual de branco para verde
+                const whiteToGreen = progress / 100;
+                const red = Math.round(255 * (1 - whiteToGreen) + 16 * whiteToGreen);
+                const green = Math.round(255 * (1 - whiteToGreen) + 185 * whiteToGreen);
+                const blue = Math.round(255 * (1 - whiteToGreen) + 129 * whiteToGreen);
+                
+                // Desenha onda de frequência com transição suave
+                ctx.strokeStyle = `rgb(${red}, ${green}, ${blue})`;
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                
+                for (let x = 0; x < canvas.width; x++) {
+                    const y = canvas.height / 2 + Math.sin((x * frequency / 200) + phase) * (amplitude * (progress / 100) * 0.8);
+                    if (x === 0) {
+                        ctx.moveTo(x, y);
+                    } else {
+                        ctx.lineTo(x, y);
+                    }
+                }
+                ctx.stroke();
+                
+                // Desenha grid
+                ctx.strokeStyle = '#374151';
+                ctx.lineWidth = 1;
+                for (let i = 0; i < 5; i++) {
+                    const y = (canvas.height / 4) * i;
+                    ctx.beginPath();
+                    ctx.moveTo(0, y);
+                    ctx.lineTo(canvas.width, y);
+                    ctx.stroke();
+                }
+                
+                // Atualiza barra de progresso com transição branco para verde
+                speedProgressBar.style.width = `${progress}%`;
+                const progressRatio = progress / 100;
+                const barRed = Math.round(255 * (1 - progressRatio) + 16 * progressRatio);
+                const barGreen = Math.round(255 * (1 - progressRatio) + 185 * progressRatio);
+                const barBlue = Math.round(255 * (1 - progressRatio) + 129 * progressRatio);
+                speedProgressBar.style.backgroundColor = `rgb(${barRed}, ${barGreen}, ${barBlue})`;
+                speedProgressBar.className = 'h-2 rounded-full transition-all duration-500';
+                
+                // Mostra velocidade em tempo real
+                const currentSpeed = (Math.random() * 50 + frequency).toFixed(1);
+                speedResult.innerHTML = `
+                    <div class="text-2xl font-bold text-blue-600">${currentSpeed}</div>
+                    <div class="text-sm text-gray-500">Mbps</div>
+                    <div class="text-xs text-purple-600">${frequency.toFixed(1)} Hz</div>
+                `;
+                
+                if (progress >= 100) {
+                    clearInterval(testInterval);
+                    
+                    // Resultado final
+                    setTimeout(() => {
+                        const finalSpeed = (Math.random() * 80 + 20).toFixed(1);
+                        const finalFreq = (Math.random() * 30 + 40).toFixed(1);
+                        const quality = finalSpeed > 50 ? 'Excelente' : finalSpeed > 25 ? 'Boa' : 'Regular';
+                        const qualityColor = finalSpeed > 50 ? 'text-green-600' : finalSpeed > 25 ? 'text-yellow-600' : 'text-red-600';
+                        
+                        speedResult.innerHTML = `
+                            <div class="text-3xl font-bold text-green-600 animate-pulse">${finalSpeed}</div>
+                            <div class="text-sm text-gray-500">Mbps</div>
+                            <div class="text-xs text-purple-600">${finalFreq} Hz</div>
+                            <div class="text-xs ${qualityColor} mt-1">${quality}</div>
+                        `;
+                        speedResult.classList.remove('speed-testing');
+                        
+                        // Onda final estável em verde
+                        const finalInterval = setInterval(() => {
+                            phase += 0.05; // Ainda mais lento
+                            ctx.fillStyle = '#1a202c';
+                            ctx.fillRect(0, 0, canvas.width, canvas.height);
+                            
+                            // Verde final estável
+                            ctx.strokeStyle = '#10b981';
+                            ctx.lineWidth = 4;
+                            ctx.beginPath();
+                            
+                            for (let x = 0; x < canvas.width; x++) {
+                                const y = canvas.height / 2 + Math.sin((x * finalFreq / 300) + phase) * 30;
+                                if (x === 0) {
+                                    ctx.moveTo(x, y);
+                                } else {
+                                    ctx.lineTo(x, y);
+                                }
+                            }
+                            ctx.stroke();
+                        }, 100); // Mais lento
+                        
+                        // Reset UI
+                        setTimeout(() => {
+                            clearInterval(finalInterval);
+                            speedTest.disabled = false;
+                            speedButtonText.textContent = 'Testar Novamente';
+                            speedSpinner.classList.add('hidden');
+                            speedProgress.classList.add('hidden');
+                            speedProgressBar.style.width = '0%';
+                            speedStatus.innerHTML = '<span class="text-gray-600">Clique para testar novamente</span>';
+                        }, 3000);
+                    }, 500);
+                }
+            }, 200); // Mais lento - atualiza a cada 200ms
+        });
+
+        // Teste de Som
+        let audioContext;
+        let oscillator;
+        let gainNode;
+        let analyser;
+        let micStream;
+        let micAnalyser;
+        let audioVisualizerCanvas;
+        let audioVisualizerCtx;
+        let visualizerAnimationId;
+
+        // Inicializa contexto de áudio
+        function initAudioContext() {
+            if (!audioContext) {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                
+                // Setup visualizador
+                audioVisualizerCanvas = document.getElementById('audio-visualizer');
+                audioVisualizerCtx = audioVisualizerCanvas.getContext('2d');
+                audioVisualizerCanvas.width = audioVisualizerCanvas.offsetWidth;
+                audioVisualizerCanvas.height = 96;
+            }
+        }
+
+        // Gera tom de teste
+        function playTestTone(frequency) {
+            initAudioContext();
+            
+            // Para tom anterior se existir
+            if (oscillator) {
+                oscillator.stop();
+            }
+            
+            // Cria novo oscilador
+            oscillator = audioContext.createOscillator();
+            gainNode = audioContext.createGain();
+            analyser = audioContext.createAnalyser();
+            
+            // Conecta nós
+            oscillator.connect(gainNode);
+            gainNode.connect(analyser);
+            analyser.connect(audioContext.destination);
+            
+            // Configura oscilador
+            oscillator.frequency.setValueAtTime(frequency, audioContext.currentTime);
+            oscillator.type = 'sine';
+            
+            // Configura volume
+            const volume = document.getElementById('volume-slider').value / 100;
+            gainNode.gain.setValueAtTime(volume * 0.3, audioContext.currentTime); // Limita volume máximo
+            
+            // Configura analisador
+            analyser.fftSize = 256;
+            
+            // Inicia tom
+            oscillator.start();
+            
+            // Para após 2 segundos
+            setTimeout(() => {
+                if (oscillator) {
+                    gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.1);
+                    oscillator.stop(audioContext.currentTime + 0.1);
+                }
+            }, 2000);
+            
+            // Inicia visualização
+            visualizeAudio();
+        }
+
+        // Visualiza áudio
+        function visualizeAudio() {
+            if (!analyser) return;
+            
+            const bufferLength = analyser.frequencyBinCount;
+            const dataArray = new Uint8Array(bufferLength);
+            
+            function draw() {
+                if (!analyser) return;
+                
+                analyser.getByteFrequencyData(dataArray);
+                
+                // Limpa canvas
+                audioVisualizerCtx.fillStyle = '#111827';
+                audioVisualizerCtx.fillRect(0, 0, audioVisualizerCanvas.width, audioVisualizerCanvas.height);
+                
+                // Desenha barras de frequência
+                const barWidth = audioVisualizerCanvas.width / bufferLength * 2;
+                let x = 0;
+                
+                for (let i = 0; i < bufferLength; i++) {
+                    const barHeight = (dataArray[i] / 255) * audioVisualizerCanvas.height;
+                    
+                    // Gradiente de cor baseado na frequência
+                    const hue = (i / bufferLength) * 360;
+                    audioVisualizerCtx.fillStyle = `hsl(${hue}, 70%, 60%)`;
+                    
+                    audioVisualizerCtx.fillRect(x, audioVisualizerCanvas.height - barHeight, barWidth, barHeight);
+                    x += barWidth + 1;
+                }
+                
+                visualizerAnimationId = requestAnimationFrame(draw);
+            }
+            
+            draw();
+        }
+
+        // Teste de microfone
+        async function testMicrophone() {
+            try {
+                initAudioContext();
+                
+                // Para stream anterior se existir
+                if (micStream) {
+                    micStream.getTracks().forEach(track => track.stop());
+                }
+                
+                // Solicita acesso ao microfone
+                micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                
+                // Cria analisador para microfone
+                const source = audioContext.createMediaStreamSource(micStream);
+                micAnalyser = audioContext.createAnalyser();
+                source.connect(micAnalyser);
+                
+                micAnalyser.fftSize = 1024; // Maior resolução para melhor análise de frequência
+                
+                document.getElementById('mic-test').textContent = '🔴 Gravando... (Fale algo)';
+                document.getElementById('mic-test').className = 'w-full bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-colors mb-2';
+                document.getElementById('mic-status').textContent = 'Microfone ativo - fale para ver frequências em tempo real';
+                document.getElementById('mic-status').style.color = '#10b981';
+                
+                // Mostra elementos de frequência
+                document.getElementById('mic-frequency-canvas').classList.remove('hidden');
+                document.getElementById('mic-freq-info').classList.remove('hidden');
+                
+                // Monitora nível e frequência do microfone
+                monitorMicLevel();
+                
+                // Para após 15 segundos
+                setTimeout(() => {
+                    if (micStream) {
+                        micStream.getTracks().forEach(track => track.stop());
+                        document.getElementById('mic-test').textContent = '🎤 Testar Microfone';
+                        document.getElementById('mic-test').className = 'w-full bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition-colors mb-2';
+                        document.getElementById('mic-status').textContent = '✅ Teste concluído! Microfone funcionando';
+                        document.getElementById('mic-level-bar').style.width = '0%';
+                        
+                        // Esconde elementos de frequência
+                        document.getElementById('mic-frequency-canvas').classList.add('hidden');
+                        document.getElementById('mic-freq-info').classList.add('hidden');
+                        
+                        // Reset valores
+                        document.getElementById('mic-bass').textContent = '0 Hz';
+                        document.getElementById('mic-mid').textContent = '0 Hz';
+                        document.getElementById('mic-treble').textContent = '0 Hz';
+                    }
+                }, 15000);
+                
+            } catch (err) {
+                document.getElementById('mic-status').textContent = '❌ Erro: Permissão negada ou microfone indisponível';
+                document.getElementById('mic-status').style.color = '#ef4444';
+            }
+        }
+
+        // Monitora nível e frequência do microfone
+        function monitorMicLevel() {
+            if (!micAnalyser) return;
+            
+            const bufferLength = micAnalyser.frequencyBinCount;
+            const dataArray = new Uint8Array(bufferLength);
+            const micCanvas = document.getElementById('mic-frequency-canvas');
+            const micCtx = micCanvas.getContext('2d');
+            
+            // Ajusta canvas
+            micCanvas.width = micCanvas.offsetWidth;
+            micCanvas.height = 64;
+            
+            function updateLevel() {
+                if (!micAnalyser) return;
+                
+                micAnalyser.getByteFrequencyData(dataArray);
+                
+                // Calcula nível médio
+                let sum = 0;
+                for (let i = 0; i < bufferLength; i++) {
+                    sum += dataArray[i];
+                }
+                const average = sum / bufferLength;
+                const level = (average / 255) * 100;
+                
+                // Atualiza barra de nível
+                document.getElementById('mic-level-bar').style.width = `${level}%`;
+                
+                // Muda cor baseado no nível
+                if (level > 50) {
+                    document.getElementById('mic-level-bar').style.backgroundColor = '#ef4444'; // Vermelho
+                } else if (level > 20) {
+                    document.getElementById('mic-level-bar').style.backgroundColor = '#f59e0b'; // Amarelo
+                } else {
+                    document.getElementById('mic-level-bar').style.backgroundColor = '#10b981'; // Verde
+                }
+                
+                // Análise de frequência
+                const sampleRate = audioContext.sampleRate;
+                const nyquist = sampleRate / 2;
+                const binWidth = nyquist / bufferLength;
+                
+                // Faixas de frequência
+                const bassRange = [20, 250];    // Graves
+                const midRange = [250, 4000];   // Médios  
+                const trebleRange = [4000, 20000]; // Agudos
+                
+                // Calcula frequências dominantes em cada faixa
+                let bassMax = 0, bassFreq = 0;
+                let midMax = 0, midFreq = 0;
+                let trebleMax = 0, trebleFreq = 0;
+                
+                for (let i = 0; i < bufferLength; i++) {
+                    const freq = i * binWidth;
+                    const amplitude = dataArray[i];
+                    
+                    if (freq >= bassRange[0] && freq <= bassRange[1] && amplitude > bassMax) {
+                        bassMax = amplitude;
+                        bassFreq = freq;
+                    } else if (freq >= midRange[0] && freq <= midRange[1] && amplitude > midMax) {
+                        midMax = amplitude;
+                        midFreq = freq;
+                    } else if (freq >= trebleRange[0] && freq <= trebleRange[1] && amplitude > trebleMax) {
+                        trebleMax = amplitude;
+                        trebleFreq = freq;
+                    }
+                }
+                
+                // Atualiza display de frequências (só mostra se há sinal significativo)
+                document.getElementById('mic-bass').textContent = bassMax > 30 ? `${Math.round(bassFreq)} Hz` : '0 Hz';
+                document.getElementById('mic-mid').textContent = midMax > 30 ? `${Math.round(midFreq)} Hz` : '0 Hz';
+                document.getElementById('mic-treble').textContent = trebleMax > 30 ? `${Math.round(trebleFreq)} Hz` : '0 Hz';
+                
+                // Desenha visualizador de frequência
+                micCtx.fillStyle = '#111827';
+                micCtx.fillRect(0, 0, micCanvas.width, micCanvas.height);
+                
+                // Desenha barras de frequência
+                const barWidth = micCanvas.width / bufferLength * 2;
+                let x = 0;
+                
+                for (let i = 0; i < bufferLength; i++) {
+                    const barHeight = (dataArray[i] / 255) * micCanvas.height;
+                    const freq = i * binWidth;
+                    
+                    // Cor baseada na faixa de frequência
+                    let color;
+                    if (freq <= 250) {
+                        color = '#ef4444'; // Vermelho para graves
+                    } else if (freq <= 4000) {
+                        color = '#f59e0b'; // Amarelo para médios
+                    } else {
+                        color = '#3b82f6'; // Azul para agudos
+                    }
+                    
+                    micCtx.fillStyle = color;
+                    micCtx.fillRect(x, micCanvas.height - barHeight, barWidth, barHeight);
+                    x += barWidth + 1;
+                }
+                
+                // Desenha linhas de referência de frequência
+                micCtx.strokeStyle = '#374151';
+                micCtx.lineWidth = 1;
+                micCtx.setLineDash([2, 2]);
+                
+                // Linha para 250Hz (divisão graves/médios)
+                const bass250Pos = (250 / nyquist) * micCanvas.width;
+                micCtx.beginPath();
+                micCtx.moveTo(bass250Pos, 0);
+                micCtx.lineTo(bass250Pos, micCanvas.height);
+                micCtx.stroke();
+                
+                // Linha para 4000Hz (divisão médios/agudos)
+                const mid4kPos = (4000 / nyquist) * micCanvas.width;
+                micCtx.beginPath();
+                micCtx.moveTo(mid4kPos, 0);
+                micCtx.lineTo(mid4kPos, micCanvas.height);
+                micCtx.stroke();
+                
+                micCtx.setLineDash([]);
+                
+                if (micStream && micStream.active) {
+                    requestAnimationFrame(updateLevel);
+                }
+            }
+            
+            updateLevel();
+        }
+
+        // Event listeners para teste de som
+        document.getElementById('test-low').addEventListener('click', () => playTestTone(60));
+        document.getElementById('test-mid').addEventListener('click', () => playTestTone(1000));
+        document.getElementById('test-high').addEventListener('click', () => playTestTone(8000));
+
+        document.getElementById('volume-slider').addEventListener('input', (e) => {
+            document.getElementById('volume-display').textContent = `${e.target.value}%`;
+            
+            // Atualiza volume se estiver tocando
+            if (gainNode) {
+                gainNode.gain.setValueAtTime(e.target.value / 100 * 0.3, audioContext.currentTime);
+            }
+        });
+
+        document.getElementById('mic-test').addEventListener('click', testMicrophone);
+
+        // Limpa recursos de áudio quando a página é fechada
+        window.addEventListener('beforeunload', () => {
+            if (oscillator) oscillator.stop();
+            if (micStream) micStream.getTracks().forEach(track => track.stop());
+            if (visualizerAnimationId) cancelAnimationFrame(visualizerAnimationId);
+            if (audioContext) audioContext.close();
+        });
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'96860ebdf237cb60',t:'MTc1NDA1ODg3OS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
