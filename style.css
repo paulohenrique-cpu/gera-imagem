@@ -129,3 +129,26 @@ select:focus, input:focus, button:focus {
     font-size: 3.5rem;
   }
 }
+.menu-topo {
+  background: #121212;
+  padding: 15px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+  justify-content: center;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.6);
+  margin-bottom: 30px;
+}
+
+.menu-topo a {
+  color: #00e0ff;
+  text-decoration: none;
+  font-weight: bold;
+  font-size: 16px;
+  transition: 0.3s;
+}
+
+.menu-topo a:hover {
+  text-decoration: underline;
+  color: #00ffff;
+}
