@@ -7,6 +7,15 @@
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
+
+  <!-- Menu de Navegação -->
+  <nav class="menu-topo">
+    <a href="index.html">🏠 Página Inicial</a>
+    <a href="editor.html">🎨 Editor Avançado</a>
+    <a href="feramentas.html">🛠️ Central de Ferramentas</a>
+    <a href="https://www.remove.bg/pt-br/upload" target="_blank">🧼 Remover Fundo (remove.bg)</a>
+  </nav>
+
   <h1>Gerador de Imagem</h1>
 
   <div class="form-container">
@@ -41,7 +50,6 @@
     <button onclick="location.href='editor.html'">Edição Avançada</button>
     <button onclick="document.getElementById('productImage').click()">Adicionar mais fotos</button>
     <button onclick="removerFundoProduto()">Remover Fundo do Produto</button>
-
     <br><br>
     <button onclick="abrirEditorPersonalizado()">Editor com Tamanhos Prontos</button>
   </div>
@@ -51,57 +59,6 @@
   </div>
 
   <script src="script.js"></script>
-  <script>
-  function removerFundoProduto() {
-    const productFileInput = document.getElementById("productImage");
-    const file = productFileInput.files[0];
-
-    if (!file) {
-      alert("Envie a imagem do produto primeiro.");
-      return;
-    }
-
-    const reader = new FileReader();
-    reader.onload = function (event) {
-      const base64Image = event.target.result.split(',')[1];
-
-      fetch("https://api.developer.pixelcut.ai/v1/remove-background", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Accept": "application/json",
-          "X-API-KEY": "sk_1ae33a0a51f44f02a6052c050c1fd362"
-        },
-        body: JSON.stringify({
-          image_data: base64Image,
-          format: "png"
-        })
-      })
-        .then(res => res.json())
-        .then(data => {
-          if (!data?.url) {
-            alert("Erro ao remover fundo.");
-            return;
-          }
-
-          const img = new Image();
-          img.crossOrigin = "anonymous";
-          img.onload = function () {
-            productImg = img;
-            drawCanvas();
-          };
-          img.src = data.url;
-        })
-        .catch(error => {
-          console.error("Erro ao remover fundo:", error);
-          alert("Erro ao remover fundo.");
-        });
-    };
-
-    reader.readAsDataURL(file);
-  }
-</script>
-
   <script>
     function abrirEditorPersonalizado() {
       window.location.href = 'editor.html';
