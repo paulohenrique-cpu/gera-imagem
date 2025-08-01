@@ -1198,6 +1198,38 @@
           selectedElement.appendChild(handle);
         }
       }
+      
+      updatePreview();
+    }
+
+    // Função para atualizar a visualização
+    function updatePreview() {
+      const canvas = document.getElementById('canvas');
+      const preview = document.getElementById('previewCanvas');
+      
+      // Clonar o conteúdo do canvas principal
+      preview.innerHTML = canvas.innerHTML;
+      
+      // Aplicar o mesmo estilo de fundo
+      preview.style.background = getComputedStyle(canvas).background;
+      preview.style.backgroundImage = getComputedStyle(canvas).backgroundImage;
+      preview.style.backgroundSize = getComputedStyle(canvas).backgroundSize;
+      preview.style.backgroundPosition = getComputedStyle(canvas).backgroundPosition;
+      preview.style.backgroundRepeat = getComputedStyle(canvas).backgroundRepeat;
+      
+      // Remover interatividade dos elementos clonados
+      const previewElements = preview.querySelectorAll('.draggable-element');
+      previewElements.forEach(element => {
+        element.onclick = null;
+        element.style.cursor = 'default';
+        element.classList.remove('selected');
+        
+        // Remover handles de resize
+        const handle = element.querySelector('.resize-handle');
+        if (handle) {
+          handle.remove();
+        }
+      });
     }
 
     // Adicionar elemento de texto
@@ -1218,6 +1250,7 @@
       
       canvas.appendChild(textElement);
       selectElement(textElement);
+      updatePreview();
     }
 
     // Adicionar elemento de imagem
@@ -1247,6 +1280,7 @@
       
       canvas.appendChild(imageElement);
       selectElement(imageElement);
+      updatePreview();
     }
 
     // Adicionar elemento de preço
@@ -1506,6 +1540,7 @@
       
       canvas.appendChild(imageElement);
       selectElement(imageElement);
+      updatePreview();
     }
 
     // Upload de produtos para galeria
@@ -1899,5 +1934,5 @@
       }
     });
   </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9686c454f610e016',t:'MTc1NDA2NjMxNy4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9686d4f397fbc491',t:'MTc1NDA2Njk5OC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
