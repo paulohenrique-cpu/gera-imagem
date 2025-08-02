@@ -961,11 +961,6 @@
                 ctx.save();
                 ctx.globalAlpha = this.opacity;
                 
-                // Apply CSS filters if available
-                if (this.filters) {
-                    ctx.filter = this.filters;
-                }
-                
                 // Apply effects before drawing the element
                 if (this.effects) {
                     this.applyEffects(ctx);
@@ -1573,22 +1568,14 @@
             input.click();
         }
         
-        // Store background image data
-        let fixedBackgroundData = null;
-        
         // Redraw canvas with all elements
         function redrawCanvas() {
             // Clear canvas
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             
-            // If there's a fixed background, draw it first
-            if (fixedBackgroundData) {
-                ctx.putImageData(fixedBackgroundData, 0, 0);
-            } else {
-                // Fill with white background if no fixed background
-                ctx.fillStyle = 'white';
-                ctx.fillRect(0, 0, canvas.width, canvas.height);
-            }
+            // Fill with white background
+            ctx.fillStyle = 'white';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
             
             // Draw all elements
             elements.forEach(element => {
@@ -2610,86 +2597,6 @@
             input.click();
         });
 
-        // Missing function definitions
-        function copy() {
-            if (selectedElement) {
-                window.copiedElement = JSON.parse(JSON.stringify(selectedElement));
-                showNotification('📋 Elemento copiado!');
-            }
-        }
-        
-        function paste() {
-            if (window.copiedElement) {
-                const newElement = JSON.parse(JSON.stringify(window.copiedElement));
-                newElement.id = ++elementCounter;
-                newElement.x += 20;
-                newElement.y += 20;
-                elements.push(newElement);
-                redrawCanvas();
-                updateLayersList();
-                showNotification('📄 Elemento colado!');
-            }
-        }
-        
-        function transform() {
-            if (selectedElement) {
-                showNotification('🔄 Modo de transformação ativado!');
-            }
-        }
-        
-        function adjustBrightness() {
-            showAdjustmentsPanel();
-        }
-        
-        function adjustLevels() {
-            showAdjustmentsPanel();
-        }
-        
-        function adjustCurves() {
-            showAdjustmentsPanel();
-        }
-        
-        function adjustHueSat() {
-            showAdjustmentsPanel();
-        }
-        
-        function addMask() {
-            if (selectedElement) {
-                showNotification('🎭 Máscara adicionada!');
-            }
-        }
-        
-        function applyBlur() {
-            applyFilter('blur');
-        }
-        
-        function applySharpen() {
-            applyFilter('sharpen');
-        }
-        
-        function applyNoise() {
-            showNotification('📺 Filtro de ruído aplicado!');
-        }
-        
-        function applyDistort() {
-            showNotification('🌀 Filtro de distorção aplicado!');
-        }
-        
-        function updateOpacity(value) {
-            const opacityElement = document.getElementById('opacityValue');
-            if (opacityElement) {
-                opacityElement.textContent = value + '%';
-            }
-            if (selectedElement) {
-                selectedElement.opacity = value / 100;
-                redrawCanvas();
-            }
-        }
-        
-        function updateBlendMode(mode) {
-            showNotification(`Blend mode changed to ${mode}!`);
-        }
-
         // Keyboard shortcuts
         document.addEventListener('keydown', function(e) {
             if (e.key === 'Control') {
@@ -3611,24 +3518,23 @@
             const img = new Image();
             img.crossOrigin = 'anonymous';
             img.onload = function() {
-                // Create temporary canvas to store background
-                const tempCanvas = document.createElement('canvas');
-                const tempCtx = tempCanvas.getContext('2d');
-                tempCanvas.width = canvas.width;
-                tempCanvas.height = canvas.height;
+                // Create background element instead of drawing directly on canvas
+                const backgroundElement = new Element('image', 0, 0, canvas.width, canvas.height);
+                backgroundElement.data = img;
+                backgroundElement.type = 'background';
+                backgroundElement.name = `Background: ${name}`;
                 
-                // Draw background image to temp canvas
-                tempCtx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                // Remove any existing background
+                elements = elements.filter(el => el.type !== 'background');
                 
-                // Store the background image data
-                fixedBackgroundData = tempCtx.getImageData(0, 0, canvas.width, canvas.height);
+                // Add background as first element (bottom layer)
+                elements.unshift(backgroundElement);
                 
-                // Redraw canvas with new background
                 redrawCanvas();
-                
+                updateLayersList();
                 addToHistory(`Apply Background: ${name}`);
                 saveState();
-                showNotification(`🖼️ Fundo "${name}" aplicado como fundo fixo da tela!`);
+                showNotification(`🖼️ Fundo "${name}" aplicado! Agora é uma camada editável.`);
                 closeBackgroundsPanel();
             };
             img.onerror = function() {
@@ -3959,108 +3865,102 @@
         
         // Adjustments Panel
         function showAdjustmentsPanel() {
-            if (!selectedElement) {
-                showNotification('⚠️ Selecione um elemento na camada primeiro para aplicar ajustes!');
-                return;
-            }
-            
             const dialog = document.createElement('div');
             dialog.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
             dialog.innerHTML = `
-                <div class="bg-gray-800 border border-gray-600 rounded-lg p-6 w-full max-w-2xl h-5/6 flex flex-col">
-                    <div class="flex justify-between items-center mb-4 flex-shrink-0">
-                        <h3 class="text-white text-lg font-bold">🎛️ Painel de Ajustes - ${selectedElement.type === 'text' ? 'Texto' : selectedElement.type === 'image' ? 'Imagem' : 'Elemento'} Selecionado</h3>
+                <div class="bg-gray-800 border border-gray-600 rounded-lg p-6 w-96 max-h-5/6 overflow-y-auto">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-white text-lg font-bold">🎛️ Painel de Ajustes</h3>
                         <button onclick="closeAdjustmentsPanel()" class="bg-gray-600 hover:bg-gray-500 px-3 py-1 rounded text-white text-sm">✕</button>
                     </div>
                     
-                    <div class="flex-1 overflow-y-auto pr-2" style="max-height: calc(100% - 120px);">`
-                    
-                        <!-- Brilho e Contraste -->
-                        <div class="mb-6 border-b border-gray-600 pb-4">
-                            <h4 class="text-white font-medium mb-3">☀️ Brilho e Contraste</h4>
-                            <div class="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label class="block text-white text-sm mb-1">Brilho: <span id="adjBrightnessValue">0</span></label>
-                                    <input type="range" id="adjBrightness" min="-100" max="100" value="0" class="w-full" oninput="applyAdjustmentPreview()">
-                                </div>
-                                <div>
-                                    <label class="block text-white text-sm mb-1">Contraste: <span id="adjContrastValue">0</span></label>
-                                    <input type="range" id="adjContrast" min="-100" max="100" value="0" class="w-full" oninput="applyAdjustmentPreview()">
-                                </div>
+                    <!-- Brilho e Contraste -->
+                    <div class="mb-6 border-b border-gray-600 pb-4">
+                        <h4 class="text-white font-medium mb-3">☀️ Brilho e Contraste</h4>
+                        <div class="space-y-3">
+                            <div>
+                                <label class="block text-white text-sm mb-1">Brilho: <span id="adjBrightnessValue">0</span></label>
+                                <input type="range" id="adjBrightness" min="-100" max="100" value="0" class="w-full">
+                            </div>
+                            <div>
+                                <label class="block text-white text-sm mb-1">Contraste: <span id="adjContrastValue">0</span></label>
+                                <input type="range" id="adjContrast" min="-100" max="100" value="0" class="w-full">
                             </div>
                         </div>
+                    </div>
                     
-                        <!-- Níveis -->
-                        <div class="mb-6 border-b border-gray-600 pb-4">
-                            <h4 class="text-white font-medium mb-3">📊 Níveis</h4>
-                            <div class="grid grid-cols-3 gap-3">
-                                <div>
-                                    <label class="block text-white text-sm mb-1">Sombras: <span id="adjShadowsValue">0</span></label>
-                                    <input type="range" id="adjShadows" min="0" max="255" value="0" class="w-full" oninput="applyAdjustmentPreview()">
-                                </div>
-                                <div>
-                                    <label class="block text-white text-sm mb-1">Meio-tons: <span id="adjMidtonesValue">1.0</span></label>
-                                    <input type="range" id="adjMidtones" min="0.1" max="3.0" step="0.1" value="1.0" class="w-full" oninput="applyAdjustmentPreview()">
-                                </div>
-                                <div>
-                                    <label class="block text-white text-sm mb-1">Realces: <span id="adjHighlightsValue">255</span></label>
-                                    <input type="range" id="adjHighlights" min="0" max="255" value="255" class="w-full" oninput="applyAdjustmentPreview()">
-                                </div>
+                    <!-- Níveis -->
+                    <div class="mb-6 border-b border-gray-600 pb-4">
+                        <h4 class="text-white font-medium mb-3">📊 Níveis</h4>
+                        <div class="space-y-3">
+                            <div>
+                                <label class="block text-white text-sm mb-1">Sombras: <span id="adjShadowsValue">0</span></label>
+                                <input type="range" id="adjShadows" min="0" max="255" value="0" class="w-full">
+                            </div>
+                            <div>
+                                <label class="block text-white text-sm mb-1">Meio-tons: <span id="adjMidtonesValue">1.0</span></label>
+                                <input type="range" id="adjMidtones" min="0.1" max="3.0" step="0.1" value="1.0" class="w-full">
+                            </div>
+                            <div>
+                                <label class="block text-white text-sm mb-1">Realces: <span id="adjHighlightsValue">255</span></label>
+                                <input type="range" id="adjHighlights" min="0" max="255" value="255" class="w-full">
                             </div>
                         </div>
+                    </div>
                     
-                        <!-- Curvas -->
-                        <div class="mb-6 border-b border-gray-600 pb-4">
-                            <h4 class="text-white font-medium mb-3">📈 Curvas</h4>
-                            <div class="bg-gray-700 p-3 rounded mb-3">
-                                <canvas id="curvesCanvas" width="300" height="200" class="w-full border border-gray-600 cursor-crosshair"></canvas>
+                    <!-- Curvas -->
+                    <div class="mb-6 border-b border-gray-600 pb-4">
+                        <h4 class="text-white font-medium mb-3">📈 Curvas</h4>
+                        <div class="bg-gray-700 p-3 rounded mb-3">
+                            <canvas id="curvesCanvas" width="200" height="150" class="w-full border border-gray-600"></canvas>
+                        </div>
+                        <div class="flex gap-2">
+                            <button onclick="resetCurves()" class="bg-gray-600 hover:bg-gray-500 px-3 py-1 rounded text-white text-xs">Reset</button>
+                            <button onclick="applyCurves()" class="bg-blue-600 hover:bg-blue-700 px-3 py-1 rounded text-white text-xs">Aplicar</button>
+                        </div>
+                    </div>
+                    
+                    <!-- Exposição -->
+                    <div class="mb-6 border-b border-gray-600 pb-4">
+                        <h4 class="text-white font-medium mb-3">📸 Exposição</h4>
+                        <div class="space-y-3">
+                            <div>
+                                <label class="block text-white text-sm mb-1">Exposição: <span id="adjExposureValue">0</span></label>
+                                <input type="range" id="adjExposure" min="-3" max="3" step="0.1" value="0" class="w-full">
                             </div>
-                            <div class="flex gap-2 justify-center">
-                                <button onclick="resetCurves()" class="bg-gray-600 hover:bg-gray-500 px-3 py-1 rounded text-white text-xs">Reset</button>
-                                <button onclick="applyCurves()" class="bg-blue-600 hover:bg-blue-700 px-3 py-1 rounded text-white text-xs">Aplicar</button>
+                            <div>
+                                <label class="block text-white text-sm mb-1">Offset: <span id="adjOffsetValue">0</span></label>
+                                <input type="range" id="adjOffset" min="-1" max="1" step="0.01" value="0" class="w-full">
+                            </div>
+                            <div>
+                                <label class="block text-white text-sm mb-1">Correção Gama: <span id="adjGammaValue">1.0</span></label>
+                                <input type="range" id="adjGamma" min="0.1" max="3.0" step="0.1" value="1.0" class="w-full">
                             </div>
                         </div>
+                    </div>
                     
-                        <!-- Exposição -->
-                        <div class="mb-6 border-b border-gray-600 pb-4">
-                            <h4 class="text-white font-medium mb-3">📸 Exposição</h4>
-                            <div class="grid grid-cols-3 gap-3">
-                                <div>
-                                    <label class="block text-white text-sm mb-1">Exposição: <span id="adjExposureValue">0</span></label>
-                                    <input type="range" id="adjExposure" min="-3" max="3" step="0.1" value="0" class="w-full" oninput="applyAdjustmentPreview()">
-                                </div>
-                                <div>
-                                    <label class="block text-white text-sm mb-1">Offset: <span id="adjOffsetValue">0</span></label>
-                                    <input type="range" id="adjOffset" min="-1" max="1" step="0.01" value="0" class="w-full" oninput="applyAdjustmentPreview()">
-                                </div>
-                                <div>
-                                    <label class="block text-white text-sm mb-1">Correção Gama: <span id="adjGammaValue">1.0</span></label>
-                                    <input type="range" id="adjGamma" min="0.1" max="3.0" step="0.1" value="1.0" class="w-full" oninput="applyAdjustmentPreview()">
-                                </div>
+                    <!-- Vibração e Saturação -->
+                    <div class="mb-6 border-b border-gray-600 pb-4">
+                        <h4 class="text-white font-medium mb-3">🌈 Vibração e Saturação</h4>
+                        <div class="space-y-3">
+                            <div>
+                                <label class="block text-white text-sm mb-1">Vibração: <span id="adjVibranceValue">0</span></label>
+                                <input type="range" id="adjVibrance" min="-100" max="100" value="0" class="w-full">
+                            </div>
+                            <div>
+                                <label class="block text-white text-sm mb-1">Saturação: <span id="adjSaturationValue">0</span></label>
+                                <input type="range" id="adjSaturation" min="-100" max="100" value="0" class="w-full">
                             </div>
                         </div>
+                    </div>
                     
-                        <!-- Vibração e Saturação -->
-                        <div class="mb-6 border-b border-gray-600 pb-4">
-                            <h4 class="text-white font-medium mb-3">🌈 Vibração e Saturação</h4>
-                            <div class="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label class="block text-white text-sm mb-1">Vibração: <span id="adjVibranceValue">0</span></label>
-                                    <input type="range" id="adjVibrance" min="-100" max="100" value="0" class="w-full" oninput="applyAdjustmentPreview()">
-                                </div>
-                                <div>
-                                    <label class="block text-white text-sm mb-1">Saturação: <span id="adjSaturationValue">0</span></label>
-                                    <input type="range" id="adjSaturation" min="-100" max="100" value="0" class="w-full" oninput="applyAdjustmentPreview()">
-                                </div>
-                            </div>
-                        </div>
-                    
-                        <!-- Matiz -->
-                        <div class="mb-6 border-b border-gray-600 pb-4">
-                            <h4 class="text-white font-medium mb-3">🎨 Matiz/Saturação</h4>
-                            <div class="mb-3">
+                    <!-- Matiz -->
+                    <div class="mb-6 border-b border-gray-600 pb-4">
+                        <h4 class="text-white font-medium mb-3">🎨 Matiz/Saturação</h4>
+                        <div class="space-y-3">
+                            <div>
                                 <label class="block text-white text-sm mb-1">Canal:</label>
-                                <select id="hueChannel" class="w-full bg-gray-700 text-white px-2 py-1 text-sm rounded" onchange="applyAdjustmentPreview()">
+                                <select id="hueChannel" class="w-full bg-gray-700 text-white px-2 py-1 text-sm rounded">
                                     <option value="master">Mestre</option>
                                     <option value="reds">Vermelhos</option>
                                     <option value="yellows">Amarelos</option>
@@ -4070,49 +3970,47 @@
                                     <option value="magentas">Magentas</option>
                                 </select>
                             </div>
-                            <div class="grid grid-cols-3 gap-3">
-                                <div>
-                                    <label class="block text-white text-sm mb-1">Matiz: <span id="adjHueValue">0</span></label>
-                                    <input type="range" id="adjHue" min="-180" max="180" value="0" class="w-full" oninput="applyAdjustmentPreview()">
-                                </div>
-                                <div>
-                                    <label class="block text-white text-sm mb-1">Saturação: <span id="adjHueSatValue">0</span></label>
-                                    <input type="range" id="adjHueSat" min="-100" max="100" value="0" class="w-full" oninput="applyAdjustmentPreview()">
-                                </div>
-                                <div>
-                                    <label class="block text-white text-sm mb-1">Luminosidade: <span id="adjLightnessValue">0</span></label>
-                                    <input type="range" id="adjLightness" min="-100" max="100" value="0" class="w-full" oninput="applyAdjustmentPreview()">
-                                </div>
+                            <div>
+                                <label class="block text-white text-sm mb-1">Matiz: <span id="adjHueValue">0</span></label>
+                                <input type="range" id="adjHue" min="-180" max="180" value="0" class="w-full">
                             </div>
-                        </div>
-                    
-                        <!-- Degradê de Cores -->
-                        <div class="mb-6">
-                            <h4 class="text-white font-medium mb-3">🌈 Mapa de Degradê</h4>
-                            <div class="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label class="block text-white text-sm mb-1">Preset:</label>
-                                    <select id="gradientPreset" class="w-full bg-gray-700 text-white px-2 py-1 text-sm rounded" onchange="applyAdjustmentPreview()">
-                                        <option value="none">Nenhum</option>
-                                        <option value="warm">Tons Quentes</option>
-                                        <option value="cool">Tons Frios</option>
-                                        <option value="vintage">Vintage</option>
-                                        <option value="dramatic">Dramático</option>
-                                        <option value="sunset">Pôr do Sol</option>
-                                        <option value="ocean">Oceano</option>
-                                    </select>
-                                </div>
-                                <div>
-                                    <label class="block text-white text-sm mb-1">Intensidade: <span id="gradientIntensityValue">50</span>%</label>
-                                    <input type="range" id="gradientIntensity" min="0" max="100" value="50" class="w-full" oninput="applyAdjustmentPreview()">
-                                </div>
+                            <div>
+                                <label class="block text-white text-sm mb-1">Saturação: <span id="adjHueSatValue">0</span></label>
+                                <input type="range" id="adjHueSat" min="-100" max="100" value="0" class="w-full">
+                            </div>
+                            <div>
+                                <label class="block text-white text-sm mb-1">Luminosidade: <span id="adjLightnessValue">0</span></label>
+                                <input type="range" id="adjLightness" min="-100" max="100" value="0" class="w-full">
                             </div>
                         </div>
                     </div>
                     
-                    <div class="flex gap-2 justify-end mt-4 pt-4 border-t border-gray-600 flex-shrink-0">
-                        <button onclick="resetAllAdjustments()" class="bg-gray-600 hover:bg-gray-500 px-4 py-2 rounded text-white">Reset Tudo</button>
-                        <button onclick="applyAllAdjustments()" class="bg-green-600 hover:bg-green-700 px-4 py-2 rounded text-white">✅ Aplicar ao Elemento</button>
+                    <!-- Degradê de Cores -->
+                    <div class="mb-6">
+                        <h4 class="text-white font-medium mb-3">🌈 Mapa de Degradê</h4>
+                        <div class="space-y-3">
+                            <div>
+                                <label class="block text-white text-sm mb-1">Preset:</label>
+                                <select id="gradientPreset" class="w-full bg-gray-700 text-white px-2 py-1 text-sm rounded">
+                                    <option value="none">Nenhum</option>
+                                    <option value="warm">Tons Quentes</option>
+                                    <option value="cool">Tons Frios</option>
+                                    <option value="vintage">Vintage</option>
+                                    <option value="dramatic">Dramático</option>
+                                    <option value="sunset">Pôr do Sol</option>
+                                    <option value="ocean">Oceano</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-white text-sm mb-1">Intensidade: <span id="gradientIntensityValue">50</span>%</label>
+                                <input type="range" id="gradientIntensity" min="0" max="100" value="50" class="w-full">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-2 justify-end">
+                        <button onclick="resetAllAdjustments()" class="bg-gray-600 hover:bg-gray-500 px-4 py-2 rounded text-white">Reset</button>
+                        <button onclick="applyAllAdjustments()" class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded text-white">Aplicar</button>
                     </div>
                 </div>
             `;
@@ -4162,19 +4060,19 @@
             if (!canvas) return;
             
             const ctx = canvas.getContext('2d');
-            ctx.clearRect(0, 0, 300, 200);
+            ctx.clearRect(0, 0, 200, 150);
             
             // Draw grid
             ctx.strokeStyle = '#555';
             ctx.lineWidth = 1;
             for (let i = 0; i <= 4; i++) {
-                const x = (i * 300) / 4;
-                const y = (i * 200) / 4;
+                const x = (i * 200) / 4;
+                const y = (i * 150) / 4;
                 ctx.beginPath();
                 ctx.moveTo(x, 0);
-                ctx.lineTo(x, 200);
+                ctx.lineTo(x, 150);
                 ctx.moveTo(0, y);
-                ctx.lineTo(300, y);
+                ctx.lineTo(200, y);
                 ctx.stroke();
             }
             
@@ -4182,58 +4080,14 @@
             ctx.strokeStyle = '#fff';
             ctx.lineWidth = 2;
             ctx.beginPath();
-            ctx.moveTo(0, 200);
-            ctx.lineTo(300, 0);
+            ctx.moveTo(0, 150);
+            ctx.lineTo(200, 0);
             ctx.stroke();
         }
         
         function applyAdjustmentPreview() {
-            if (!selectedElement) return;
-            
-            // Get all adjustment values
-            const adjustments = {
-                brightness: parseInt(document.getElementById('adjBrightness')?.value || 0),
-                contrast: parseInt(document.getElementById('adjContrast')?.value || 0),
-                shadows: parseInt(document.getElementById('adjShadows')?.value || 0),
-                midtones: parseFloat(document.getElementById('adjMidtones')?.value || 1.0),
-                highlights: parseInt(document.getElementById('adjHighlights')?.value || 255),
-                exposure: parseFloat(document.getElementById('adjExposure')?.value || 0),
-                offset: parseFloat(document.getElementById('adjOffset')?.value || 0),
-                gamma: parseFloat(document.getElementById('adjGamma')?.value || 1.0),
-                vibrance: parseInt(document.getElementById('adjVibrance')?.value || 0),
-                saturation: parseInt(document.getElementById('adjSaturation')?.value || 0),
-                hue: parseInt(document.getElementById('adjHue')?.value || 0),
-                hueSat: parseInt(document.getElementById('adjHueSat')?.value || 0),
-                lightness: parseInt(document.getElementById('adjLightness')?.value || 0),
-                gradientPreset: document.getElementById('gradientPreset')?.value || 'none',
-                gradientIntensity: parseInt(document.getElementById('gradientIntensity')?.value || 50)
-            };
-            
-            // Store adjustments in the element
-            selectedElement.adjustments = adjustments;
-            
-            // Apply visual effects to the element
-            if (selectedElement.type === 'image' || selectedElement.type === 'text') {
-                // Create filter string for CSS filters
-                let filterString = '';
-                
-                if (adjustments.brightness !== 0) {
-                    filterString += `brightness(${100 + adjustments.brightness}%) `;
-                }
-                if (adjustments.contrast !== 0) {
-                    filterString += `contrast(${100 + adjustments.contrast}%) `;
-                }
-                if (adjustments.saturation !== 0) {
-                    filterString += `saturate(${100 + adjustments.saturation}%) `;
-                }
-                if (adjustments.hue !== 0) {
-                    filterString += `hue-rotate(${adjustments.hue}deg) `;
-                }
-                
-                selectedElement.filters = filterString.trim();
-            }
-            
-            redrawCanvas();
+            // This would apply adjustments in real-time
+            showNotification('🎛️ Ajustes aplicados em tempo real!');
         }
         
         function resetCurves() {
@@ -4308,5 +4162,5 @@
             showNotification('🎨 PhotoShop Pro carregado! Tela padrão: 1000x1000px. Use os botões no topo para configurar o tamanho ou adicionar texto.');
         }, 1000);
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9690210bf4b35cb6',t:'MTc1NDE2NDQ4Ny4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'96901066f7f25cb6',t:'MTc1NDE2MzgwNS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
